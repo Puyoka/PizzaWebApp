@@ -1,11 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace PizzaWebAppLibrary.DataAccess;
-public class MongoIngredientData : IMongoIngredientData
+﻿namespace PizzaWebAppLibrary.DataAccess;
+public class MongoIngredientData : IIngredientData
 {
     private IMongoCollection<IngredientModel> ingredients;
     private IMemoryCache cache;
@@ -32,10 +26,28 @@ public class MongoIngredientData : IMongoIngredientData
         return result;
     }
 
-    public Task CreateIngredient(IngredientModel ingredient)
+    public async Task<IngredientModel> GetIngredient(string id)
     {
+        var result = await GetAllIngredients();
+        return result.Where(x => x.Id == id).FirstOrDefault();
+    }
+
+    public async Task CreateIngredient(IngredientModel ingredient)
+    {
+        await ingredients.InsertOneAsync(ingredient);
         cache.Remove(CacheName);
-        return ingredients.InsertOneAsync(ingredient);
+    }
+
+    public async Task DeleteIngredient(IngredientModel ingredient)
+    {
+        await ingredients.DeleteOneAsync(x => x.Id == ingredient.Id);
+        cache.Remove(CacheName);
+    }
+
+    public async Task UpdateIngredient(IngredientModel ingredient)
+    {
+        await ingredients.ReplaceOneAsync(x => x.Id == ingredient.Id, ingredient);
+        cache.Remove(CacheName);
     }
 
 }
