@@ -1,5 +1,5 @@
 ﻿namespace PizzaWebAppLibrary.DataAccess;
-public class MongoIngredientData : IIngredientData
+public class MongoIngredientData
 {
     private IMongoCollection<IngredientModel> ingredients;
     private IMemoryCache cache;
@@ -38,9 +38,9 @@ public class MongoIngredientData : IIngredientData
         cache.Remove(CacheName);
     }
 
-    public async Task DeleteIngredient(IngredientModel ingredient)
+    public async Task DeleteIngredient(string id)
     {
-        await ingredients.DeleteOneAsync(x => x.Id == ingredient.Id);
+        await ingredients.DeleteOneAsync(x => x.Id == id);
         cache.Remove(CacheName);
     }
 

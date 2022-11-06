@@ -1,7 +1,6 @@
 ﻿using Microsoft.Extensions.Configuration;
 
 
-
 namespace PizzaWebAppLibrary.DataAccess;
 public class DbConnection : IDbConnection
 {

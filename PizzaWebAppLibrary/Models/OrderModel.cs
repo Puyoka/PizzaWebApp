@@ -16,6 +16,6 @@ public class OrderModel
     public bool PaysWithCash { get; set; }
     public string Description { get; set; }
     public DateTime Date_0 { get; set; }
-    public DateTime Date_1 { get; set; }
+    public DateTime? Date_1 { get; set; }
     public OrderStatusModel OrderStatus { get; set; }
 }
