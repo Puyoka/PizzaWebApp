@@ -62,21 +62,21 @@ public class MongoProductData : IProductData
         return result.ToList();
     }
 
-    public async Task<TModel> GetProduct<TModel>(string id)
-    {
-        var product = products.FindAsync(x => x.Id == id).ToBsonDocument();
-        var productType = product["_t"].AsString;
-        
-
-        var collectionName = dbConn.ProductCollectionName;
-        var db = dbConn.db;
-        var filter = new BsonDocument("_id", id);
-        var collection = db.GetCollection<Type.GetType(productType)>(collectionName);
-
-        var result = await collection.FindAsync(filter);
-        var a = result.FirstOrDefault();
+    //public async Task<TModel> GetProduct<TModel>(string id)
+    //{
+    //    var product = products.FindAsync(x => x.Id == id).ToBsonDocument();
+    //    var productType = product["_t"].AsString;
 
 
-        return null;
-    }
+    //    var collectionName = dbConn.ProductCollectionName;
+    //    var db = dbConn.db;
+    //    var filter = new BsonDocument("_id", id);
+    //    var collection = db.GetCollection < Type.GetType(productType) > (collectionName);
+
+    //    var result = await collection.FindAsync(filter);
+    //    var a = result.FirstOrDefault();
+
+
+    //    return null;
+    //}
 }

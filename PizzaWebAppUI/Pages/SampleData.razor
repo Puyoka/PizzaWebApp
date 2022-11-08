@@ -1,0 +1,92 @@
+﻿@page "/SampleData"
+@inject ICategoryData CategoryData
+@inject IIngredientData IngredientData
+@inject IOrderStatusData OrderStatusData
+@inject IProductData ProductData
+
+<h3>SampleData</h3>
+
+<button @onclick="GenerateSampleData">Generate Sample Data</button>
+
+@code {
+    private async void GenerateSampleData()
+    {
+        await CreateCategories();
+        await CreateOrderStatuses();
+        await CreateIngredients();
+        await CreateProducts();
+    }
+
+    private async Task CreateCategories()
+    {
+        var categories = await CategoryData.GetAllCategories();
+
+        if (categories?.Count > 0)
+        {
+            return;
+        }
+
+        await CategoryData.CreateCategory(new CategoryModel() { Name = "Pizza" });
+        await CategoryData.CreateCategory(new CategoryModel() { Name = "Üdítő" });        
+    }
+
+    private async Task CreateOrderStatuses()
+    {
+        var orderstatuses = await OrderStatusData.GetAllOrderStatuses();
+
+        if (orderstatuses?.Count > 0)
+        {
+            return;
+        }
+
+        await OrderStatusData.CreateOrderStatus(new OrderStatusModel() { Name = "Készül" });
+        await OrderStatusData.CreateOrderStatus(new OrderStatusModel() { Name = "Szállítás alatt" });
+        await OrderStatusData.CreateOrderStatus(new OrderStatusModel() { Name = "Teljesítve" });
+    }
+
+    private async Task CreateIngredients()
+    {
+        var ingredients = await IngredientData.GetAllIngredients();
+
+        if(ingredients?.Count > 0)
+        {
+            return;
+        }
+
+        await IngredientData.CreateIngredient(new IngredientModel() { Name = "Mozzarella", Price = 300, Allergens = null });
+        await IngredientData.CreateIngredient(new IngredientModel() { Name = "Szalámi", Price = 200, Allergens = null });
+        await IngredientData.CreateIngredient(new IngredientModel() { Name = "Sonka", Price = 300, Allergens = null });
+        await IngredientData.CreateIngredient(new IngredientModel() { Name = "Kukorica", Price = 150, Allergens = null });
+        await IngredientData.CreateIngredient(new IngredientModel() { Name = "Gomba", Price = 150, Allergens = null });
+        await IngredientData.CreateIngredient(new IngredientModel() { Name = "Paradicsom szósz", Price = 200, Allergens = null });
+        await IngredientData.CreateIngredient(new IngredientModel() { Name = "Bacon", Price = 300, Allergens = null });
+    }
+
+    private async Task CreateProducts()
+    {
+        var products = await ProductData.GetAllProducts();
+        var categories = await CategoryData.GetAllCategories();
+        var i = await IngredientData.GetAllIngredients();
+
+        if (products?.Count > 0)
+        {
+            return;
+        }
+        var drinkCategory = categories.Find(x => x.Name == "Üdítő");
+        var pizzaCategory = categories.Find(x => x.Name == "Pizza");
+
+
+
+
+        await ProductData.CreateProduct(new ProductDrinkModel() { Name = "Fanta", Price = 400, Size = "330ml", Category = drinkCategory, Available = true });
+        await ProductData.CreateProduct(new ProductDrinkModel() { Name = "Coca Cola", Price = 400, Size = "330ml", Category = drinkCategory, Available = true });
+        await ProductData.CreateProduct(new ProductDrinkModel() { Name = "Sprite", Price = 400, Size = "330ml", Category = drinkCategory, Available = true });
+
+        
+        await ProductData.CreateProduct(new ProductPizzaModel() { Name = "Pizza1", Price = 1200, Ingrediens = new List<IngredientModel>() {i[0],i[4],i[3]}, Category = pizzaCategory, Available = true });
+        await ProductData.CreateProduct(new ProductPizzaModel() { Name = "Pizza2", Price = 1500, Ingrediens = new List<IngredientModel>() {i[0],i[5],i[3],i[4]}, Category = pizzaCategory, Available = true });
+        await ProductData.CreateProduct(new ProductPizzaModel() { Name = "Pizza3", Price = 1700, Ingrediens = new List<IngredientModel>() {i[0],i[6],i[3]}, Category = pizzaCategory, Available = true });
+        await ProductData.CreateProduct(new ProductPizzaModel() { Name = "Pizza4", Price = 1700, Ingrediens = new List<IngredientModel>() {i[0],i[3],i[2]}, Category = pizzaCategory, Available = true });
+        await ProductData.CreateProduct(new ProductPizzaModel() { Name = "Pizza5", Price = 2000, Ingrediens = new List<IngredientModel>() {i[0],i[4]}, Category = pizzaCategory, Available = true });
+    }
+}

@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.1.32421.90
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PizzaWebAppUI", "PizzaWebAppUI\PizzaWebAppUI.csproj", "{AF712585-8CD6-46F2-ABD4-5FDB06092B3A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PizzaWebAppUI", "PizzaWebAppUI\PizzaWebAppUI.csproj", "{AF712585-8CD6-46F2-ABD4-5FDB06092B3A}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PizzaWebAppLibrary", "PizzaWebAppLibrary\PizzaWebAppLibrary.csproj", "{316E01F8-7D8E-442F-830A-B9EC259EEA71}"
 EndProject
