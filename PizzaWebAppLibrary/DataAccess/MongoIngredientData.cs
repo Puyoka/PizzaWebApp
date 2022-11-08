@@ -1,5 +1,5 @@
 ﻿namespace PizzaWebAppLibrary.DataAccess;
-public class MongoIngredientData
+public class MongoIngredientData : IIngredientData
 {
     private IMongoCollection<IngredientModel> ingredients;
     private IMemoryCache cache;

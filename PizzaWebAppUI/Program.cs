@@ -10,7 +10,14 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 builder.Services.AddSingleton<IDbConnection, DbConnection>();
-builder.Services.AddTransient<IMongoIngredientData, MongoIngredientData>();
+builder.Services.AddSingleton<ICategoryData, MongoCategoryData>();
+builder.Services.AddSingleton<IOrderStatusData, MongoOrderStatusData>();
+builder.Services.AddTransient<ICustomerData, MongoCustomerData>();
+builder.Services.AddTransient<IIngredientData, MongoIngredientData>();
+builder.Services.AddTransient<IOrderData, MongoOrderData>();
+builder.Services.AddTransient<IProductData, MongoProductData>();
+
+
 
 
 

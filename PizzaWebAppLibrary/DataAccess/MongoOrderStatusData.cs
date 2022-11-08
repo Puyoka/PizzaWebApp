@@ -1,12 +1,12 @@
 ﻿namespace PizzaWebAppLibrary.DataAccess;
 
-public class MongoOrderStatusesData
+public class MongoOrderStatusData : IOrderStatusData
 {
     private IMongoCollection<OrderStatusModel> orderStatuses;
     private IMemoryCache cache;
     private const string CacheName = "OrderStatusesData";
 
-    public MongoOrderStatusesData(IDbConnection _db, IMemoryCache _cache)
+    public MongoOrderStatusData(IDbConnection _db, IMemoryCache _cache)
     {
         cache = _cache;
         orderStatuses = _db.OrderStatusCollection;
@@ -34,7 +34,7 @@ public class MongoOrderStatusesData
 
     public Task DeleteOrderStatus(string id)
     {
-        return orderStatuses.DeleteOneAsync(x => x.Id == id);
         cache.Remove(CacheName);
+        return orderStatuses.DeleteOneAsync(x => x.Id == id);
     }
 }

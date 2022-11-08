@@ -1,8 +1,6 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿namespace PizzaWebAppLibrary.DataAccess;
 
-namespace PizzaWebAppLibrary.DataAccess;
-
-public class MongoOrderData
+public class MongoOrderData : IOrderData
 {
     private IMongoCollection<OrderModel> orders;
     private IMemoryCache cache;

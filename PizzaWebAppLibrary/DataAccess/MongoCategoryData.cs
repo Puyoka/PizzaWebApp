@@ -1,5 +1,5 @@
 ﻿namespace PizzaWebAppLibrary.DataAccess;
-public class MongoCategoryData
+public class MongoCategoryData : ICategoryData
 {
     private IMongoCollection<CategoryModel> categories;
     private IMemoryCache cache;

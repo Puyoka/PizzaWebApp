@@ -1,8 +1,5 @@
-﻿using Microsoft.Extensions.Logging.Abstractions;
-using MongoDB.Bson.Serialization;
-
-namespace PizzaWebAppLibrary.DataAccess;
-public class MongoProductData
+﻿namespace PizzaWebAppLibrary.DataAccess;
+public class MongoProductData : IProductData
 {
     private IMongoCollection<ProductModel> products;
     private IMemoryCache cache;
@@ -36,10 +33,10 @@ public class MongoProductData
         return result;
     }
 
-    public async Task<List<ProductModel>> GetAllAvailableProducts(bool availabel = true)
+    public async Task<List<ProductModel>> GetAvailableProducts(bool availabel = true)
     {
         var temp = await GetAllProducts();
-        return temp.Where(x => x.Available == availabel).ToList();        
+        return temp.Where(x => x.Available == availabel).ToList();
     }
 
     public async Task<List<TModel>> GetProductsByType<TModel>(TModel memberOfDesiredType)
@@ -65,17 +62,21 @@ public class MongoProductData
         return result.ToList();
     }
 
-    //public async Task<TModel> GetProduct<TModel>(string id)
-    //{
-    //    var collectionName = dbConn.ProductCollectionName;
-    //    var db = dbConn.db;
-    //    var filter = new BsonDocument("_id", id);
-    //    var collection = db.GetCollection<TModel>(collectionName);
+    public async Task<TModel> GetProduct<TModel>(string id)
+    {
+        var product = products.FindAsync(x => x.Id == id).ToBsonDocument();
+        var productType = product["_t"].AsString;
+        
 
-    //    var result = await collection.FindAsync(filter);
-    //    var a = result.FirstOrDefault();
+        var collectionName = dbConn.ProductCollectionName;
+        var db = dbConn.db;
+        var filter = new BsonDocument("_id", id);
+        var collection = db.GetCollection<Type.GetType(productType)>(collectionName);
+
+        var result = await collection.FindAsync(filter);
+        var a = result.FirstOrDefault();
 
 
-    //    return null;
-    //}
+        return null;
+    }
 }
