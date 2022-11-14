@@ -1,4 +1,8 @@
-﻿namespace PizzaWebAppLibrary.DataAccess;
+﻿using System.Reflection.Metadata;
+using MongoDB.Bson.Serialization;
+using MongoDB.Driver.Linq;
+
+namespace PizzaWebAppLibrary.DataAccess;
 public class MongoProductData : IProductData
 {
     private IMongoCollection<ProductModel> products;
@@ -62,21 +66,100 @@ public class MongoProductData : IProductData
         return result.ToList();
     }
 
-    //public async Task<TModel> GetProduct<TModel>(string id)
-    //{
-    //    var product = products.FindAsync(x => x.Id == id).ToBsonDocument();
-    //    var productType = product["_t"].AsString;
 
 
-    //    var collectionName = dbConn.ProductCollectionName;
-    //    var db = dbConn.db;
-    //    var filter = new BsonDocument("_id", id);
-    //    var collection = db.GetCollection < Type.GetType(productType) > (collectionName);
-
-    //    var result = await collection.FindAsync(filter);
-    //    var a = result.FirstOrDefault();
 
 
-    //    return null;
-    //}
+    async void Home()
+    {
+        string id = "636cd8df7b7bb7c9b2ded3fe";
+        BsonDocument prod = await GetProduct(id);
+        var documentType = prod["_t"].ToString();
+
+
+
+
+
+    }
+
+    public async Task<BsonDocument> GetProduct(string id)
+    {
+        var collectionName = dbConn.ProductCollectionName;
+        var db = dbConn.db;
+        var filter = Builders<BsonDocument>.Filter.Eq("_id", ObjectId.Parse(id));
+
+        var collection = db.GetCollection<BsonDocument>(collectionName);
+        var cursor = await collection.FindAsync(filter);
+        var document = cursor.FirstOrDefault();
+
+        return document;
+        var documentType = document["_t"].ToString();
+    }
+
+
+
+
+    public async Task<TModel> GetProduct<TModel>(string id) where TModel : class
+    {
+        var collectionName = dbConn.ProductCollectionName;
+        var db = dbConn.db;
+        var filter = Builders<BsonDocument>.Filter.Eq("_id", ObjectId.Parse(id));
+
+        var collection = db.GetCollection<BsonDocument>(collectionName);
+        var cursor = await collection.FindAsync(filter);
+        var document = cursor.FirstOrDefault();
+        var documentType = document["_t"].ToString();
+
+
+        switch (documentType)
+        {
+            case "ProductDrinkModel":
+                object result0 = BsonSerializer.Deserialize<ProductDrinkModel>(document);
+                return (TModel)result0;
+            case "ProductPizzaModel":
+                object result1 = BsonSerializer.Deserialize<ProductPizzaModel>(document);
+                return (TModel)result1;
+            default:
+                object result2 = BsonSerializer.Deserialize<ProductModel>(document);
+                return (TModel)result2;
+        }
+        //var product = products.FindAsync(x => x.Id == id).ToBsonDocument();
+        //var productType = product["_t"].AsString;
+
+
+        //var collectionName = dbConn.ProductCollectionName;
+        //var db = dbConn.db;
+        //var filter = new BsonDocument("_id", id);
+
+        //dynamic collection = productType switch
+        //{
+        //    "ProductDrinkModel" => db.GetCollection<ProductDrinkModel>(collectionName).FindAsync(x => x.Id == id).ToBsonDocument(),
+        //    "ProductPizzaModel" => db.GetCollection<ProductPizzaModel>(collectionName).FindAsync(x => x.Id == id).ToBsonDocument(),
+        //    _ => db.GetCollection<ProductModel>(collectionName).FindAsync(x => x.Id == id).ToBsonDocument(),
+        //};
+
+        //var a = collection;
+
+        //switch (productType)
+        //{
+        //    case "ProductDrinkModel":
+        //        var a = db.GetCollection<ProductDrinkModel>(collectionName);
+        //        var outputA = await a.FindAsync(filter);
+        //        return (TModel)outputA.FirstOrDefault();
+        //    break;
+        //    case "ProductPizzaModel":              
+        //        var b = db.GetCollection<ProductPizzaModel>(collectionName);
+        //        break;
+        //    default:
+        //        var c = db.GetCollection<ProductModel>(collectionName);
+        //        break;
+        //}
+
+
+
+        return null;
+    }
+
+
+
 }

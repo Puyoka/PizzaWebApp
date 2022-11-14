@@ -1,36 +1,31 @@
 ﻿@page "/"
 @inject IDbConnection dbc
 @inject IIngredientData ingredientData
+@inject IProductData productData
 
 <PageTitle>Index</PageTitle>
 
 <h1>Hello, world!</h1>
 
-@if (ingredients is not null)
-{
-    foreach (var item in ingredients)
-    {
-        <p>@item.Name</p>
-    }
-}
 
-<button @onclick="(() => Click())"></button>
-
-
-
-
-Welcome to your new app.
-
-<SurveyPrompt Title="How is Blazor working for you?" />
 
 @code {
     private List<IngredientModel> ingredients;
+    private List<ProductModel> products;
 
     private IngredientModel i = new IngredientModel() { Name = "sauuuce", Price = 3000 };
+
+
+    string id = "636cd8df7b7bb7c9b2ded3fe";
+    //ProductModel product;
+
+    dynamic product;
 
     protected async override Task OnInitializedAsync()
     {        
         ingredients = await ingredientData.GetAllIngredients();
+        products = await productData.GetAllProducts();
+        product = await productData.GetProduct(id);
     }
 
     private async Task Click()
@@ -38,6 +33,8 @@ Welcome to your new app.
         await ingredientData.CreateIngredient(i);
         ingredients = await ingredientData.GetAllIngredients();
     }
+
+    
 
     
 

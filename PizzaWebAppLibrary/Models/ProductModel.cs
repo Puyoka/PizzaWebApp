@@ -1,6 +1,6 @@
 ﻿namespace PizzaWebAppLibrary.Models;
 
-[BsonDiscriminator(Required = true, RootClass = true)]
+[BsonDiscriminator(Required = true)]
 [BsonKnownTypes(typeof(ProductPizzaModel), typeof(ProductDrinkModel))]
 public class ProductModel
 {
