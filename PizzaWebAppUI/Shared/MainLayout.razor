@@ -4,9 +4,24 @@
 
 <div class="page">
     <main>
-        <div class="top-row px-4">
-            <a href="https://docs.microsoft.com/aspnet/" target="_blank">About</a>
-        </div>
+       <nav class="navbar navbar-expand-lg navbar-dark ftco_navbar bg-dark ftco-navbar-light">
+	    <div class="container-fluid">
+			<a class="navbar-brand" href="#">
+				<img src="~/images/pizzaLogo.png" alt="" width="50" height="50" />
+				PizzaBrand
+			</a>
+
+		  <div class="navbar-nav d-flex justify-content-center">
+			  <a href="index.html" class="nav-item active nav-link">Pizzák</a>
+			  <a href="index.html" class="nav-item active nav-link">Üdítők</a>
+		  </div>
+
+		  <div class="navbar-nav d-flex justify-content-end">
+			  <a href="index.html" class="nav-item active nav-link">Kosaram</a>
+			  <a href="index.html" class="nav-item active nav-link">Bejelentkezés</a>
+		  </div>
+		</div>
+	  </nav>
 
         <article class="content px-4">
             @Body
