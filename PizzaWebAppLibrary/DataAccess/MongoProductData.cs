@@ -67,62 +67,50 @@ public class MongoProductData : IProductData
     }
 
 
+    //public async Task<BsonDocument> GetProduct(string id)
+    //{
+    //    var collectionName = dbConn.ProductCollectionName;
+    //    var db = dbConn.db;
+    //    var filter = Builders<BsonDocument>.Filter.Eq("_id", ObjectId.Parse(id));
+
+    //    var collection = db.GetCollection<BsonDocument>(collectionName);
+    //    var cursor = await collection.FindAsync(filter);
+    //    var document = cursor.FirstOrDefault();
+
+    //    return document;
+    //    var documentType = document["_t"].ToString();
+    //}
 
 
 
-    async void Home()
+
+    public async Task<TModel> GetProduct<TModel>(TModel memberOfDesiredType) where TModel : ProductModel
     {
-        string id = "636cd8df7b7bb7c9b2ded3fe";
-        BsonDocument prod = await GetProduct(id);
-        var documentType = prod["_t"].ToString();
+        var temp = await GetAllProducts();
+        return (TModel)temp.Where(x => x.Id == memberOfDesiredType.Id).FirstOrDefault();
+
+        //var collectionName = dbConn.ProductCollectionName;
+        //var db = dbConn.db;
+        //var filter = Builders<BsonDocument>.Filter.Eq("_id", ObjectId.Parse(id));
+
+        //var collection = db.GetCollection<BsonDocument>(collectionName);
+        //var cursor = await collection.FindAsync(filter);
+        //var document = cursor.FirstOrDefault();
+        //var documentType = document["_t"].ToString();
 
 
-
-
-
-    }
-
-    public async Task<BsonDocument> GetProduct(string id)
-    {
-        var collectionName = dbConn.ProductCollectionName;
-        var db = dbConn.db;
-        var filter = Builders<BsonDocument>.Filter.Eq("_id", ObjectId.Parse(id));
-
-        var collection = db.GetCollection<BsonDocument>(collectionName);
-        var cursor = await collection.FindAsync(filter);
-        var document = cursor.FirstOrDefault();
-
-        return document;
-        var documentType = document["_t"].ToString();
-    }
-
-
-
-
-    public async Task<TModel> GetProduct<TModel>(string id) where TModel : class
-    {
-        var collectionName = dbConn.ProductCollectionName;
-        var db = dbConn.db;
-        var filter = Builders<BsonDocument>.Filter.Eq("_id", ObjectId.Parse(id));
-
-        var collection = db.GetCollection<BsonDocument>(collectionName);
-        var cursor = await collection.FindAsync(filter);
-        var document = cursor.FirstOrDefault();
-        var documentType = document["_t"].ToString();
-
-
-        switch (documentType)
-        {
-            case "ProductDrinkModel":
-                object result0 = BsonSerializer.Deserialize<ProductDrinkModel>(document);
-                return (TModel)result0;
-            case "ProductPizzaModel":
-                object result1 = BsonSerializer.Deserialize<ProductPizzaModel>(document);
-                return (TModel)result1;
-            default:
-                object result2 = BsonSerializer.Deserialize<ProductModel>(document);
-                return (TModel)result2;
-        }
+        //switch (documentType)
+        //{
+        //    case "ProductDrinkModel":
+        //        object result0 = BsonSerializer.Deserialize<ProductDrinkModel>(document);
+        //        return (TModel)result0;
+        //    case "ProductPizzaModel":
+        //        object result1 = BsonSerializer.Deserialize<ProductPizzaModel>(document);
+        //        return (TModel)result1;
+        //    default:
+        //        object result2 = BsonSerializer.Deserialize<ProductModel>(document);
+        //        return (TModel)result2;
+        //}
         //var product = products.FindAsync(x => x.Id == id).ToBsonDocument();
         //var productType = product["_t"].AsString;
 
