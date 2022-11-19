@@ -1,46 +1,150 @@
 ﻿@page "/"
+@inject AuthenticationStateProvider authProvider
 @inject IDbConnection dbc
 @inject IIngredientData ingredientData
 @inject IProductData productData
+@inject ICustomerData customerData
 
 <PageTitle>Index</PageTitle>
 
 
 <div class="container">
+    <div class="row">    
+        <div class="btn-group">
+            <button class="btn btn-primary" @onclick="(()=> ShowPizza(true))">Pizza</button>
+            <button class="btn btn-primary" @onclick="(()=> ShowPizza(false))">Drinks</button>
+        </div>
+    </div>
     <div class="row row-cols-2 g-3">
-        @if(pizzas is not null)
+        @if(showPizza)
         {
-            @foreach (var pizza in pizzas)
-            {
-                <div class="col bg-light opacity-90 text-dark">
-                    <img src="~/images/pizzaLogo.png">
-                    <h2>@pizza.Name</h2>
-                    <p>
-                        @foreach(var ingredient in pizza.Ingrediens)
-                        {
-                            @ingredient.Name                            
-                        }                        
-                    </p>
-                    <div>@pizza.Price</div>
-                    <button>Kosárba</button>
-                </div>
+            @if (pizzas is not null)
+            {                
+                @foreach (var pizza in pizzas)
+                {
+                    <div class="col bg-light text-dark hstack">
+                        <div>
+                            <img src="~/images/pizzaLogo.png">
+                        </div>
+                        <div>
+                            <h2>@pizza.Name</h2>
+                            <p>
+                                @foreach (var ingredient in pizza.Ingrediens)
+                                {
+                                    @ingredient.Name
+                                }
+                            </p>
+                            <div>@pizza.Price</div>
+                        </div>
+                        <div>
+                            <button class="btn btn-primary" @onclick="(() => PutInCart(pizza))">Put in cart</button>
+                        </div>                        
+                    </div>
+                }
             }
         }
+        else
+        {
+            @if (drinks is not null)
+            {
+                @foreach (var drink in drinks)
+                {
+                    <div class="col bg-light opacity-90 text-dark">
+                        <img src="~/images/pizzaLogo.png">
+                        <h2>@drink.Name</h2>
+                        <p>
+                            @drink.Size
+                        </p>
+                        <div>@drink.Price</div>
+                        <button class="btn btn-primary" @onclick="(() => PutInCart(drink))">Put in cart</button>
+                    </div>
+                }
+            }
+        }
+
+    </div>
+    <div class="row">
+
     </div>
 </div>
 
 
 @code {
+    private CustomerModel loggedInCustomer;    
     private List<ProductModel> products;
     private List<ProductPizzaModel> pizzas;
     private List<ProductDrinkModel> drinks;
+
+
+    private bool showPizza = true;
 
     protected async override Task OnInitializedAsync()
     {        
         products = await productData.GetAvailableProducts();
         pizzas = await productData.GetAvailabelProductsByType(new ProductPizzaModel());
         drinks = await productData.GetAvailabelProductsByType(new ProductDrinkModel());
+
+        await LoadAndVerifyUser();
     }
 
+    private void ShowPizza(bool input)
+    {
+        showPizza = input;
+    }
+
+    private Task PutInCart(ProductModel product)
+    {
+        if (loggedInCustomer.ShoppingCart is null)
+            loggedInCustomer.ShoppingCart = new List<ProductModel>();
+        
+        loggedInCustomer.ShoppingCart.Add(product);
+        return customerData.UpdateCustomer(loggedInCustomer);
+    }
+
+    private async Task LoadAndVerifyUser()
+    {
+        var authState = await authProvider.GetAuthenticationStateAsync();
+        string objectId = authState.User.Claims.FirstOrDefault(c => c.Type.Contains("objectidentifier"))?.Value;
+
+        if (string.IsNullOrWhiteSpace(objectId) == false)
+        {
+            loggedInCustomer = await customerData.GetCustomerFromAuthentication(objectId) ?? new();
+
+
+            string city = authState.User.Claims.FirstOrDefault(c => c.Type.Contains("city"))?.Value;
+            string street = authState.User.Claims.FirstOrDefault(c => c.Type.Contains("street"))?.Value;
+            string email = authState.User.Claims.FirstOrDefault(c => c.Type.Contains("email"))?.Value;
+            AddressModel address = new AddressModel() { City = city, Street = street };
+
+            bool isDirty = false;
+            if (objectId.Equals(loggedInCustomer.ObjectIdentifier) == false)
+            {
+                isDirty = true;
+                loggedInCustomer.ObjectIdentifier = objectId;
+            }
+            if (address.Equals(loggedInCustomer.Address) == false)
+            {
+                isDirty = true;               
+                loggedInCustomer.Address = address;
+            }
+            if (email.Equals(loggedInCustomer.Email) == false)
+            {
+                isDirty = true;
+                loggedInCustomer.Email = email;  
+            }
+            if (isDirty)
+            {
+                if (string.IsNullOrWhiteSpace(loggedInCustomer.Id))
+                {
+                    await customerData.CreateCustomer(loggedInCustomer);
+                }
+                else
+                {
+                    await customerData.UpdateCustomer(loggedInCustomer);
+                }
+            }
+
+        }
+    }
 
 }

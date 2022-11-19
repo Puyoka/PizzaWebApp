@@ -1,6 +1,10 @@
+using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
-
+using Microsoft.AspNetCore.Rewrite;
+using Microsoft.Extensions.Options;
+using Microsoft.Identity.Web;
+using Microsoft.Identity.Web.UI;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -8,7 +12,21 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorPages();
-builder.Services.AddServerSideBlazor();
+builder.Services.AddServerSideBlazor().AddMicrosoftIdentityConsentHandler();
+builder.Services.AddMemoryCache();
+builder.Services.AddControllersWithViews().AddMicrosoftIdentityUI();
+
+builder.Services.AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)
+    .AddMicrosoftIdentityWebApp(builder.Configuration.GetSection("AzureAdB2C"));
+
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("Admin", policy =>
+    {
+        policy.RequireClaim("jobTitle", "Admin");
+    });
+});
+
 builder.Services.AddSingleton<IDbConnection, DbConnection>();
 builder.Services.AddSingleton<ICategoryData, MongoCategoryData>();
 builder.Services.AddSingleton<IOrderStatusData, MongoOrderStatusData>();
@@ -37,6 +55,21 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
+//authe,autho
+app.UseAuthentication();
+app.UseAuthorization();
+
+app.UseRewriter(new RewriteOptions().Add(
+   context =>
+   {
+       if (context.HttpContext.Request.Path == "/MicrosoftIdentity/Account/SignedOut")
+       {
+           context.HttpContext.Response.Redirect("/");
+       }
+   }));
+
+
+app.MapControllers();
 app.MapBlazorHub();
 app.MapFallbackToPage("/_Host");
 

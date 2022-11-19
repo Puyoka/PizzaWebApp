@@ -6,4 +6,5 @@ public class BasicCustomerModel
     public string Id { get; set; }
     public AddressModel Address { get; set; }
     public int PhoneNumber { get; set; }
+
 }

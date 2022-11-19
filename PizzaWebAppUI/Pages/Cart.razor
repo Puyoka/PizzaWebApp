@@ -1,0 +1,139 @@
+﻿@page "/cart"
+@attribute [Authorize]
+@inject AuthenticationStateProvider authProvider
+@inject ICustomerData customerData
+@inject IOrderStatusData orderStatusData
+@inject IOrderData orderData
+
+
+<h1>Cart</h1>
+
+<div class="container">
+    <div class="row bg-white text-black rounded-3">        
+        @if(loggedInCustomer?.ShoppingCart.Count > 0)
+        {
+            @foreach(var product in loggedInCustomer.ShoppingCart)
+            {
+                <div class="col-4">
+                    @product.Name
+                </div>
+                <div class="col-4">
+                    @product.Price
+                </div>
+                <div class="col-4">
+                    <button class="btn btn-danger" @onclick="(() => RemoveFromCart(product))">Remove</button>
+                </div>
+            }            
+        }
+        else
+        {
+            <p>Your shoppingcart is empty</p>
+        }
+    </div>
+    <div class="container">
+        @if (loggedInCustomer is not null)
+        {
+            <p>Total: @GetShoppingcartTotal()</p>
+        }
+        
+    </div>
+    
+    <div class="container bg-white text-black rounded-3 ">
+        <form>
+            @if(basicCustomer is not null)
+            {
+                <div class="form-floating">
+                    <input type="text" id="city" class="form-control" placeholder="City" @bind-value="basicCustomer.Address.City">
+                    <label for="city" class="form-label">City</label>
+                </div>
+
+                <div class="form-floating">
+                    <input type="text" id="address" class="form-control" placeholder="Street, house" @bind-value="basicCustomer .Address.Street">
+                    <label for="address" class="form-label">Street, house</label>
+                </div>
+
+
+                <div class="form-check">
+                    Pays with card <input type="checkbox" class="form-check-input"@bind-value="order.PaysWithCash">
+                </div>
+
+                <label for="phoneNum">Phone number</label>
+                <div class="input-group">
+                    <div class="input-group-text ">+36</div>
+                    <input type="number" id="phoneNum" class="form-control" @bind-value="basicCustomer.PhoneNumber">
+                </div>
+
+                <label for="note" class="form-label">Note</label>
+                <input type="text" id="note" class="form-control" @bind-value="order.Description">
+
+
+                <button class="btn btn-primary" @onclick="(() => CreateOrder())">Order</button>
+            }
+        </form>
+    </div>
+</div>
+
+@code {
+    private BasicCustomerModel basicCustomer;
+    private OrderModel order = new();
+    private CustomerModel loggedInCustomer;
+    private List<OrderStatusModel> orderStatuses;
+
+    protected async override Task OnInitializedAsync()
+    {
+        loggedInCustomer = await authProvider.GetCustomerFromAuth(customerData);
+        orderStatuses = await orderStatusData.GetAllOrderStatuses();
+        InitializeBasicCustomerInfo();
+    }
+
+    private void InitializeBasicCustomerInfo()
+    {
+        basicCustomer = new BasicCustomerModel();
+        basicCustomer.Id = loggedInCustomer.Id;
+        basicCustomer.Address = loggedInCustomer.Address;
+        basicCustomer.PhoneNumber = loggedInCustomer.PhoneNumber;
+    }
+
+    private async Task RemoveFromCart(ProductModel product)
+    {
+        loggedInCustomer?.ShoppingCart.Remove(product);
+        await customerData.UpdateCustomer(loggedInCustomer);
+    }
+
+    private async Task CreateOrder()
+    {
+        if (loggedInCustomer.ShoppingCart.Count == 0) return;
+
+        await CheckPhoneNumber();
+
+        order.Customer = basicCustomer;
+        order.Products = loggedInCustomer.ShoppingCart;
+        order.Total = GetShoppingcartTotal();
+        order.Date_0 = DateTime.Now;
+        order.OrderStatus = orderStatuses.Where(x => x.Name == "Processing").FirstOrDefault();
+
+        await orderData.CreateOrder(order);
+
+        loggedInCustomer.ShoppingCart.Clear();
+        await customerData.UpdateCustomer(loggedInCustomer);
+    }
+    private async Task CheckPhoneNumber()
+    {
+        //Add phoneNum to db
+        if (basicCustomer.PhoneNumber != loggedInCustomer.PhoneNumber)
+        {
+            loggedInCustomer.PhoneNumber = basicCustomer.PhoneNumber;
+            await customerData.UpdateCustomer(loggedInCustomer);
+        }
+    }
+
+    private int GetShoppingcartTotal()
+    {
+        var total = 0;
+        foreach (var item in loggedInCustomer?.ShoppingCart)
+        {
+            total += item.Price;
+        }
+        return total;
+    }
+}

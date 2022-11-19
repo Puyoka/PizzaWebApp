@@ -26,6 +26,12 @@ public class MongoCustomerData : ICustomerData
         return output.FirstOrDefault();
     }
 
+    public async Task<CustomerModel> GetCustomerFromAuthentication(string objectId)
+    {
+        var result = await customers.FindAsync(u => u.ObjectIdentifier == objectId);
+        return result.FirstOrDefault();
+    }
+
     public Task UpdateCustomer(CustomerModel customer)
     {
         return customers.ReplaceOneAsync(x => x.Id == customer.Id, customer);
