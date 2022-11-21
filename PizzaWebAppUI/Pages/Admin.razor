@@ -1,8 +1,268 @@
 ﻿@page "/admin"
 @attribute [Authorize(Policy = "Admin")]
+@inject IIngredientData ingredientData
+@inject IProductData productData
+@inject ICustomerData customerData
+@inject IOrderData orderData
+@inject IOrderStatusData orderStatusData
 
-<h3>Admin</h3>
+
+<div class="container bg-white text-black">
+    <div class="row"> 
+        <div class="btn-group">
+            <button class="btn btn-primary" >Products</button>
+            <button class="btn btn-primary" >Orders</button>
+        </div>
+    </div>
+    @if(true)
+    {
+        <div class="row">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th scope="col">Name</th>
+                        <th scope="col">Price</th>
+                        <th scope="col">Available</th>
+                        <th scope="col">Edit</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if(products is not null)
+                    {
+                        @foreach (var product in products)
+                        {
+                            <tr>
+                                <td>
+                                    <input type="text" class="form-control form-control-plaintext bg-white" @bind-value="product.Name" disabled="@IsEditDisabled(product.Name)" />
+                                </td>
+                                <td>
+                                    <input type="text" class="form-control form-control-plaintext bg-white" @bind-value="product.Price" disabled="@IsEditDisabled(product.Name)" />
+                                </td>
+                                <td>
+                                    <div class="form-check">
+                                        <input type="checkbox" class="form-check-input" @bind="product.Available" disabled="@IsEditDisabled(product.Name)" />
+                                    </div>
+                                </td>
+                                <td>
+                                    @if (IsEditDisabled(product.Name))
+                                    {
+                                        <button class="btn btn-primary" @onclick="(() => SetWhichProductToEdit(product))">Edit</button>
+                                        <button class="btn btn-danger" @onclick="(() => DeleteProduct(product))">Delete</button>
+                                    }
+                                    else
+                                    {
+                                        <button class="btn btn-primary" @onclick="(() => EditProduct(product))">Submit</button>
+                                        <button class="btn btn-danger" @onclick="(() => CancelEdit(product))">Cancel</button>
+                                    }
+                                </td>
+                            </tr>
+                        }                        
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+    else
+    {
+        
+    }
+</div>
+
+<div id="accordion">
+    <div class="card">
+        <div class="card-header" id="headingOne">
+            <h5 class="mb-0">
+                <button class="btn btn-link" data-toggle="collapse" data-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                    <h1>Edit products</h1>
+                </button>
+            </h5>
+        </div>
+
+        <div id="collapseOne" class="collapse show" aria-labelledby="headingOne" data-parent="#accordion">
+            <div class="card-body">
+                <div class="row">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th scope="col">Name</th>
+                                <th scope="col">Price</th>
+                                <th scope="col">Available</th>
+                                <th scope="col">Edit</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (products is not null)
+                            {
+                                @foreach (var product in products)
+                                {
+                                    <tr>
+                                        <td>
+                                            <input type="text" class="form-control form-control-plaintext bg-white" @bind-value="product.Name" disabled="@IsEditDisabled(product.Name)" />
+                                        </td>
+                                        <td>
+                                            <input type="text" class="form-control form-control-plaintext bg-white" @bind-value="product.Price" disabled="@IsEditDisabled(product.Name)" />
+                                        </td>
+                                        <td>
+                                            <div class="form-check">
+                                                <input type="checkbox" class="form-check-input" @bind="product.Available" disabled="@IsEditDisabled(product.Name)" />
+                                            </div>
+                                        </td>
+                                        <td>
+                                            @if (IsEditDisabled(product.Name))
+                                            {
+                                                <button class="btn btn-primary" @onclick="(() => SetWhichProductToEdit(product))">Edit</button>
+                                                <button class="btn btn-danger" @onclick="(() => DeleteProduct(product))">Delete</button>
+                                            }
+                                            else
+                                            {
+                                                <button class="btn btn-primary" @onclick="(() => EditProduct(product))">Submit</button>
+                                                <button class="btn btn-danger" @onclick="(() => CancelEdit(product))">Cancel</button>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="card">
+        <div class="card-header" id="headingTwo">
+            <h5 class="mb-0">
+                <button class="btn btn-link collapsed" data-toggle="collapse" data-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                    <h2>Orders</h2>
+                </button>
+            </h5>
+        </div>
+        <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordion">
+            <div class="card-body">
+                <div class="row">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th scope="col">Date</th>
+                                <th scope="col">Address</th>
+                                <th scope="col">Products</th>
+                                <th scope="col">Total</th>
+                                <th scope="col">Payment</th>
+                                <th scope="col">Description</th>
+                                <th scope="col">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (orders is not null)
+                            {
+                                @foreach (var order in orders)
+                                {
+                                    <tr>
+                                        <td>@order.Date_0</td>
+                                        <td>
+                                            @order.Customer.Address.City
+                                            <br>
+                                            @order.Customer.Address.Street
+                                        </td>
+                                        <td>
+                                            <div class="dropdown">
+                                                <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                                    @order.Products.Count
+                                                    pcs
+                                                </button>
+                                                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                                    @foreach (var product in order.Products)
+                                                    {
+                                                        <a class="dropdown-item" href="#">@product.Name</a>
+                                                    }
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>@order.Total</td>
+                                        <td>@PaymenMethode(order)</td>
+                                        <td>@order.Description</td>
+                                        <td>@order.OrderStatus.Name</td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="card">
+        <div class="card-header" id="headingThree">
+            <h5 class="mb-0">
+                <button class="btn btn-link collapsed" data-toggle="collapse" data-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+                    Collapsible Group Item #3
+                </button>
+            </h5>
+        </div>
+        <div id="collapseThree" class="collapse" aria-labelledby="headingThree" data-parent="#accordion">
+            <div class="card-body">
+                Anim pariatur cliche reprehenderit, enim eiusmod high life accusamus terry richardson ad squid. 3 wolf moon officia aute, non cupidatat skateboard dolor brunch. Food truck quinoa nesciunt laborum eiusmod. Brunch 3 wolf moon tempor, sunt aliqua put a bird on it squid single-origin coffee nulla assumenda shoreditch et. Nihil anim keffiyeh helvetica, craft beer labore wes anderson cred nesciunt sapiente ea proident. Ad vegan excepteur butcher vice lomo. Leggings occaecat craft beer farm-to-table, raw denim aesthetic synth nesciunt you probably haven't heard of them accusamus labore sustainable VHS.
+            </div>
+        </div>
+    </div>
+</div>
+
 
 @code {
+    //edit: name lose focus anomaly, validation/restrict
+    //orders: sort
+
+    private List<ProductModel> products;
+    private List<OrderModel> orders;
+    private List<OrderStatusModel> orderStatuses;
+
+    protected async override Task OnInitializedAsync()
+    {
+        products = await productData.GetAllProducts();
+        orders = await orderData.GetAllOrders();
+        orderStatuses = await orderStatusData.GetAllOrderStatuses();
+    }
+
+    //ORDERS
+    private string PaymenMethode(OrderModel order)
+    {
+        return order.PaysWithCash ? "Cash" : "Card";
+    }
+
+    //EDIT
+    private string editedProduct = string.Empty;
+    private ProductModel productPreEdit = new();
+    private void SetWhichProductToEdit(ProductModel product)
+    {
+        editedProduct = product.Name;
+        //ref
+        productPreEdit = new ProductModel() {Id = product.Id, Available = product.Available, Category = product.Category, Name = product.Name, Price = product.Price };
+    }
+    private bool IsEditDisabled(string productName)
+    {
+        return editedProduct != productName;
+    }
+
+    private async Task DeleteProduct(ProductModel product)
+    {        
+        await productData.DeleteProduct(product);
+        products.Remove(product);        
+    }
+
+    private async Task EditProduct(ProductModel product)
+    {
+        await productData.UpdateProduct(product);
+        productPreEdit = new();
+        editedProduct = string.Empty;
+    }
+
+    private void CancelEdit(ProductModel product)
+    {
+        int i = products.FindIndex(x => x.Id == product.Id);
+        products[i] = productPreEdit;
+
+        productPreEdit = new();
+        editedProduct = string.Empty;       
+        StateHasChanged();
+    }
 
 }

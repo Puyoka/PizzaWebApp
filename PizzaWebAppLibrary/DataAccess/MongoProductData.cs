@@ -1,5 +1,6 @@
 ﻿using System.Reflection.Metadata;
 using MongoDB.Bson.Serialization;
+using MongoDB.Driver;
 using MongoDB.Driver.Linq;
 
 namespace PizzaWebAppLibrary.DataAccess;
@@ -17,9 +18,22 @@ public class MongoProductData : IProductData
         dbConn = _db;
     }
 
-    public Task CreateProduct<TModel>(TModel product) where TModel : ProductModel
+    public async Task CreateProduct<TModel>(TModel product) where TModel : ProductModel
     {
-        return products.InsertOneAsync(product);
+        await products.InsertOneAsync(product);
+        cache.Remove(CacheName);
+    }
+
+    public async Task UpdateProduct<TModel>(TModel product) where TModel : ProductModel
+    {
+        await products.ReplaceOneAsync(x => x.Id == product.Id, product);
+        cache.Remove(CacheName);
+    }
+
+    public async Task DeleteProduct<TModel>(TModel product) where TModel : ProductModel
+    {
+        await products.DeleteOneAsync(x => x.Id == product.Id);
+        cache.Remove(CacheName);
     }
 
     public async Task<List<ProductModel>> GetAllProducts()

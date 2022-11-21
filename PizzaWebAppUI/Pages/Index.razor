@@ -37,7 +37,9 @@
                             <div>@pizza.Price</div>
                         </div>
                         <div>
+                            <AuthorizeView>
                             <button class="btn btn-primary" @onclick="(() => PutInCart(pizza))">Put in cart</button>
+                            </AuthorizeView>
                         </div>                        
                     </div>
                 }
@@ -56,7 +58,9 @@
                             @drink.Size
                         </p>
                         <div>@drink.Price</div>
+                        <AuthorizeView>
                         <button class="btn btn-primary" @onclick="(() => PutInCart(drink))">Put in cart</button>
+                        </AuthorizeView>
                     </div>
                 }
             }
@@ -70,6 +74,8 @@
 
 
 @code {
+    //search by ingredient, allergenes, not loggedin -> putincart
+
     private CustomerModel loggedInCustomer;    
     private List<ProductModel> products;
     private List<ProductPizzaModel> pizzas;
@@ -94,11 +100,16 @@
 
     private Task PutInCart(ProductModel product)
     {
-        if (loggedInCustomer.ShoppingCart is null)
-            loggedInCustomer.ShoppingCart = new List<ProductModel>();
-        
-        loggedInCustomer.ShoppingCart.Add(product);
-        return customerData.UpdateCustomer(loggedInCustomer);
+        if (loggedInCustomer is not null)
+        {
+            if (loggedInCustomer.ShoppingCart is null)
+                loggedInCustomer.ShoppingCart = new List<ProductModel>();
+
+            loggedInCustomer.ShoppingCart.Add(product);
+            return customerData.UpdateCustomer(loggedInCustomer);            
+        }
+
+        return null;
     }
 
     private async Task LoadAndVerifyUser()

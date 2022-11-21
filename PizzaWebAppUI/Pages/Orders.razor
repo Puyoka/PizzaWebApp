@@ -1,9 +1,62 @@
 ﻿@page "/orders"
 @attribute [Authorize]
 @inject AuthenticationStateProvider authProvider
+@inject IOrderData orderData
+@inject ICustomerData customerData
 
 <h3>Orders</h3>
 
+
+<div class="container bg-white text-black">
+    <table class="table">
+        <thead>
+            <tr>
+                <th scope="col">Date</th>
+                <th scope="col">Products</th>
+                <th scope="col">Total</th>
+                <th scope="col">Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if(customerOrders is not null)
+            {
+                @foreach(var order in customerOrders)
+                {
+                    <tr>
+                        <td>@order.Date_0</td>
+                        <td>                            
+                            <div class="dropdown">
+                                <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    @order.Products.Count
+                                    pcs
+                                </button>
+                                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                    @foreach(var product in order.Products)
+                                    {
+                                        <a class="dropdown-item" href="#">@product.Name</a>
+                                    }                                    
+                                </div>
+                            </div>
+                        </td>
+                        <td>@order.Total</td>
+                        <td>@order.OrderStatus.Name</td>
+                    </tr>
+                }               
+            }            
+        </tbody>
+    </table>
+
+</div>
+
 @code {
+    private CustomerModel loggedInCustomer;
+    private List<OrderModel> customerOrders;
+
+    protected async override Task OnInitializedAsync()
+    {
+        loggedInCustomer = await authProvider.GetCustomerFromAuth(customerData);
+        customerOrders = await orderData.GetCustomerOrders(loggedInCustomer.Id);        
+    }
+
 
 }
