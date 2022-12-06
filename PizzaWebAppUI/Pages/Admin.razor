@@ -7,7 +7,7 @@
 @inject IOrderStatusData orderStatusData
 
 
-<div class="container bg-white text-black">
+@*<div class="container bg-white text-black">
     <div class="row"> 
         <div class="btn-group">
             <button class="btn btn-primary" >Products</button>
@@ -66,7 +66,7 @@
     {
         
     }
-</div>
+</div>*@
 
 <div id="accordion">
     <div class="card">
@@ -194,13 +194,34 @@
         <div class="card-header" id="headingThree">
             <h5 class="mb-0">
                 <button class="btn btn-link collapsed" data-toggle="collapse" data-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
-                    Collapsible Group Item #3
+                    Create
                 </button>
             </h5>
         </div>
         <div id="collapseThree" class="collapse" aria-labelledby="headingThree" data-parent="#accordion">
             <div class="card-body">
-                Anim pariatur cliche reprehenderit, enim eiusmod high life accusamus terry richardson ad squid. 3 wolf moon officia aute, non cupidatat skateboard dolor brunch. Food truck quinoa nesciunt laborum eiusmod. Brunch 3 wolf moon tempor, sunt aliqua put a bird on it squid single-origin coffee nulla assumenda shoreditch et. Nihil anim keffiyeh helvetica, craft beer labore wes anderson cred nesciunt sapiente ea proident. Ad vegan excepteur butcher vice lomo. Leggings occaecat craft beer farm-to-table, raw denim aesthetic synth nesciunt you probably haven't heard of them accusamus labore sustainable VHS.
+                <form>                    
+                    <div class="form-floating">
+                        <input type="text" id="name" class="form-control" placeholder="Name " @bind-value="a">
+                        <label for="name" class="form-label">Name</label>
+                    </div>
+
+                    <div class="form-floating">
+                        <input type="text" id="price" class="form-control" placeholder="Price" @bind-value="a">
+                        <label for="price" class="form-label">Price</label>
+                    </div>
+
+
+                    <button class="btn btn-primary" @onclick="nothing">Create</button>                    
+                </form>
+                    @if(createToggle)
+                    {
+
+                    }
+                    else
+                    {
+
+                    }
             </div>
         </div>
     </div>
@@ -214,6 +235,16 @@
     private List<ProductModel> products;
     private List<OrderModel> orders;
     private List<OrderStatusModel> orderStatuses;
+
+    bool createToggle = true; //true = create pizza
+
+
+    string a = string.Empty;
+    void nothing()
+    {
+        
+    }
+
 
     protected async override Task OnInitializedAsync()
     {
@@ -258,7 +289,10 @@
     private void CancelEdit(ProductModel product)
     {
         int i = products.FindIndex(x => x.Id == product.Id);
-        products[i] = productPreEdit;
+        products[i].Name =  productPreEdit.Name;
+        products[i].Price =  productPreEdit.Price;
+        products[i].Available =  productPreEdit.Available;
+
 
         productPreEdit = new();
         editedProduct = string.Empty;       
