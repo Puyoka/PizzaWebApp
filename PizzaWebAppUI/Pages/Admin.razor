@@ -5,6 +5,7 @@
 @inject ICustomerData customerData
 @inject IOrderData orderData
 @inject IOrderStatusData orderStatusData
+@inject ICategoryData categoryData
 
 
 @*<div class="container bg-white text-black">
@@ -178,9 +179,22 @@
                                             </div>
                                         </td>
                                         <td>@order.Total</td>
-                                        <td>@PaymenMethode(order)</td>
+                                        <td>@PaymentMethode(order)</td>
                                         <td>@order.Description</td>
-                                        <td>@order.OrderStatus.Name</td>
+                                        <td>
+                                            <div class="dropdown">
+                                                <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                                @order.OrderStatus.Name
+                                                </button>
+
+                                                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                                @foreach(var orderStatus in orderStatuses)
+                                                {
+                                                    <button class="dropdown-item" @onclick="(() => ChangeStatus(order, orderStatus))"> @orderStatus.Name</button>
+                                                }
+                                                </div>
+                                            </div>
+                                        </td>
                                     </tr>
                                 }
                             }
@@ -200,28 +214,45 @@
         </div>
         <div id="collapseThree" class="collapse" aria-labelledby="headingThree" data-parent="#accordion">
             <div class="card-body">
-                <form>                    
-                    <div class="form-floating">
-                        <input type="text" id="name" class="form-control" placeholder="Name " @bind-value="a">
-                        <label for="name" class="form-label">Name</label>
-                    </div>
+                <div class="btn-group">
+                    <button class="btn btn-primary" @onclick="(()=> CreateToggle(true))">Pizza</button>
+                    <button class="btn btn-primary" @onclick="(()=> CreateToggle(false))">Drinks</button>
+                </div>
+                @if(createToggle)
+                {
+                    <form>                    
+                        <div class="form-floating">
+                            <input type="text" id="name" class="form-control" placeholder="Name " @bind-value="a">
+                            <label for="name" class="form-label">Name</label>
+                        </div>
 
-                    <div class="form-floating">
-                        <input type="text" id="price" class="form-control" placeholder="Price" @bind-value="a">
-                        <label for="price" class="form-label">Price</label>
-                    </div>
+                        <div class="form-floating">
+                            <input type="text" id="price" class="form-control" placeholder="Price" @bind-value="a">
+                            <label for="price" class="form-label">Price</label>
+                        </div>
 
+                        @if(ingredients is not null)
+                        {
+                            <div class="row row-cols-5">
+                                <div class="col ">
+                                @foreach(var ingredient in ingredients)
+                                {
+                                    <div class="custom-control custom-checkbox list-group-item">
+                                        <input class="custom-control-input" type="checkbox" @oninput="(()=> CheckboxChanged(ingredient))">
+                                        <label class="cursor-pointer font-italic d-block custom-control-label">@ingredient.Name</label>
+                                    </div>
+                                } 
+                                </div>
+                            </div>
+                        }
+                        <button class="btn btn-primary" @onclick="nothing">Create</button>                    
+                    </form>
+                }
+                else
+                {
+                    
 
-                    <button class="btn btn-primary" @onclick="nothing">Create</button>                    
-                </form>
-                    @if(createToggle)
-                    {
-
-                    }
-                    else
-                    {
-
-                    }
+                }
             </div>
         </div>
     </div>
@@ -235,6 +266,8 @@
     private List<ProductModel> products;
     private List<OrderModel> orders;
     private List<OrderStatusModel> orderStatuses;
+    private List<CategoryModel> categories;
+    private List<IngredientModel> ingredients;
 
     bool createToggle = true; //true = create pizza
 
@@ -242,7 +275,7 @@
     string a = string.Empty;
     void nothing()
     {
-        
+
     }
 
 
@@ -251,10 +284,43 @@
         products = await productData.GetAllProducts();
         orders = await orderData.GetAllOrders();
         orderStatuses = await orderStatusData.GetAllOrderStatuses();
+        categories = await categoryData.GetAllCategories();
+        ingredients = await ingredientData.GetAllIngredients();
+    }
+    //CREATE
+    CategoryModel newProductsCategory = new CategoryModel();
+    List<IngredientModel> newProductsIngredients = new List<IngredientModel>();
+
+    private void CheckboxChanged(IngredientModel ingredient)
+    {
+        if(newProductsIngredients.Contains(ingredient))
+        {
+            newProductsIngredients.Remove(ingredient);
+        }
+        else
+        {
+            newProductsIngredients.Add(ingredient);
+        }
+    }
+
+    private void CreateToggle(bool b)
+    {
+        createToggle = b;
+    }
+
+    private void SetNewProductsCategory(CategoryModel category)
+    {
+        newProductsCategory = category;
     }
 
     //ORDERS
-    private string PaymenMethode(OrderModel order)
+    private async Task ChangeStatus(OrderModel order, OrderStatusModel status)
+    {
+        order.OrderStatus = status;
+        await orderData.UpdateOrderStatus(order);
+    }
+
+    private string PaymentMethode(OrderModel order)
     {
         return order.PaysWithCash ? "Cash" : "Card";
     }
