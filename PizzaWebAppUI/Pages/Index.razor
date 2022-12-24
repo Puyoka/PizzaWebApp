@@ -9,37 +9,41 @@
 
 
 <div class="container">
-    <div class="row">    
-        <div class="btn-group">
+    <div class="row justify-content-center">    
+        <div class="btn-group btn-group-lg p-2 w-75">
             <button class="btn btn-primary" @onclick="(()=> ShowPizza(true))">Pizza</button>
             <button class="btn btn-primary" @onclick="(()=> ShowPizza(false))">Drinks</button>
         </div>
     </div>
-    <div class="row row-cols-2 g-3">
+    <div class="row row-cols-2">
         @if(showPizza)
         {
             @if (pizzas is not null)
             {                
                 @foreach (var pizza in pizzas)
                 {
-                    <div class="col bg-light text-dark hstack">
-                        <div>
-                            <img src="~/images/pizzaLogo.png">
-                        </div>
-                        <div>
-                            <h2>@pizza.Name</h2>
-                            <p>
-                                @foreach (var ingredient in pizza.Ingrediens)
-                                {
-                                    @ingredient.Name
-                                }
-                            </p>
-                            <div>@pizza.Price</div>
-                        </div>
-                        <div>
-                            <AuthorizeView>
-                            <button class="btn btn-primary" @onclick="(() => PutInCart(pizza))">Put in cart</button>
-                            </AuthorizeView>
+                    <div class="col" style="z-index: 0;">
+                        <div class=" bg-light text-dark hstack my-2 rounded-3">
+                            <div class="m-2 ">
+                                <img src="/images/pizzaPlaceholder.jpg" class="img-fluid" alt="Responsive image">
+                            </div>
+                            <div class="">
+                                <h2 class="align-text-top">@pizza.Name</h2>
+                                <p>
+                                    @foreach (var ingredient in pizza.Ingrediens)
+                                    {
+                                        string ing = $"{@ingredient.Name} ";
+                                        @ing
+                                    }
+                                </p>
+                                <div>@pizza.Price</div>
+                            </div>
+                            <div class="bg-info" >
+                                <AuthorizeView>
+                                    <button class="btn btn-primary h-100" @onclick="(() => PutInCart(pizza))">Put in cart</button>
+                                </AuthorizeView>
+                                
+                            </div>
                         </div>                        
                     </div>
                 }
@@ -51,16 +55,24 @@
             {
                 @foreach (var drink in drinks)
                 {
-                    <div class="col bg-light opacity-90 text-dark">
-                        <img src="~/images/pizzaLogo.png">
-                        <h2>@drink.Name</h2>
-                        <p>
-                            @drink.Size
-                        </p>
-                        <div>@drink.Price</div>
-                        <AuthorizeView>
-                        <button class="btn btn-primary" @onclick="(() => PutInCart(drink))">Put in cart</button>
-                        </AuthorizeView>
+                    <div class="col">
+                        <div class="bg-light text-dark hstack my-2">
+                            <div>
+                                <img src="/images/sodaPlaceholder.jpg" class="img-fluid" alt="Responsive image" style="height: 200px; width:200px">
+                            </div> 
+                            <div>
+                                <h2>@drink.Name</h2>
+                                <p>
+                                    @drink.Size
+                                </p>
+                                <div>@drink.Price</div>
+                            </div>                     
+                            <div>
+                                <AuthorizeView>
+                                    <button class="btn btn-primary" @onclick="(() => PutInCart(drink))">Put in cart</button>
+                                </AuthorizeView>
+                            </div>                            
+                        </div>
                     </div>
                 }
             }

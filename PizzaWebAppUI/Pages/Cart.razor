@@ -5,73 +5,86 @@
 @inject IOrderStatusData orderStatusData
 @inject IOrderData orderData
 
+<div class="container bg-white text-black w-25 rounded-pill mb-5">
+    <h2 class="bg-white text-black text-center text-uppercase">Cart</h2>
+</div>
 
-<h1>Cart</h1>
 
 <div class="container">
-    <div class="row bg-white text-black rounded-3">        
-        @if(loggedInCustomer?.ShoppingCart.Count > 0)
+    <div class="row bg-white text-black rounded-3 mb-4 shadow-lg ">
+        @if (loggedInCustomer?.ShoppingCart.Count > 0)
         {
-            @foreach(var product in loggedInCustomer.ShoppingCart)
-            {
-                <div class="col-4">
-                    @product.Name
-                </div>
-                <div class="col-4">
-                    @product.Price
-                </div>
-                <div class="col-4">
-                    <button class="btn btn-danger" @onclick="(() => RemoveFromCart(product))">Remove</button>
-                </div>
-            }            
+            <table class="table table-bordered mt-2 ">
+                <thead>
+                    <tr>
+                        <th class ="text-center" scope="col">Name</th>
+                        <th class="text-center" scope="col">Price</th>
+                        <th class="text-center" scope="col">Remove from cart</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    
+                        @foreach (var product in loggedInCustomer.ShoppingCart)
+                        {
+                            <tr>
+                            <td class="col-4 text-center">
+                                    @product.Name
+                                </td>
+                            <td class="col-4 text-center">
+                                    @product.Price
+                                </td>
+                            <td class="col-4 text-center">
+                                    <button class="btn btn-danger" @onclick="(() => RemoveFromCart(product))">Remove</button>
+                                </td>
+                            </tr>
+                        }
+                    
+                </tbody>
+            </table>
+            <p>Total: @GetShoppingcartTotal()</p>
         }
         else
         {
             <p>Your shoppingcart is empty</p>
         }
     </div>
-    <div class="container">
-        @if (loggedInCustomer is not null)
-        {
-            <p>Total: @GetShoppingcartTotal()</p>
-        }
-        
-    </div>
-    
-    <div class="container bg-white text-black rounded-3 ">
-        <form>
-            @if(basicCustomer is not null)
-            {
-                <div class="form-floating">
-                    <input type="text" id="city" class="form-control" placeholder="City" @bind-value="basicCustomer.Address.City">
-                    <label for="city" class="form-label">City</label>
-                </div>
-
-                <div class="form-floating">
-                    <input type="text" id="address" class="form-control" placeholder="Street, house" @bind-value="basicCustomer .Address.Street">
-                    <label for="address" class="form-label">Street, house</label>
-                </div>
-
-
-                <div class="form-check">
-                    Pays with card <input type="checkbox" class="form-check-input"@bind-value="order.PaysWithCash">
-                </div>
-
-                <label for="phoneNum">Phone number</label>
-                <div class="input-group">
-                    <div class="input-group-text ">+36</div>
-                    <input type="number" id="phoneNum" class="form-control" @bind-value="basicCustomer.PhoneNumber">
-                </div>
-
-                <label for="note" class="form-label">Note</label>
-                <input type="text" id="note" class="form-control" @bind-value="order.Description">
-
-
-                <button class="btn btn-primary" @onclick="(() => CreateOrder())">Order</button>
-            }
-        </form>
-    </div>
 </div>
+    
+<div class="container bg-white text-black rounded-3 p-3 shadow-lg ">
+    <form>
+        @if(basicCustomer is not null)
+        {
+            <div class="form-floating p-1">
+                <input type="text" id="city" class="form-control" placeholder="City" @bind-value="basicCustomer.Address.City">
+                <label for="city" class="form-label">City</label>
+            </div>
+
+            <div class="form-floating p-1">
+                <input type="text" id="address" class="form-control" placeholder="Street, house" @bind-value="basicCustomer .Address.Street">
+                <label for="address" class="form-label">Street, house</label>
+            </div>
+
+
+            <div class="form-check">
+                Pays with card <input type="checkbox" class="form-check-input"@bind-value="order.PaysWithCash">
+            </div>
+
+            <label for="phoneNum">Phone number</label>
+            <div class="input-group">
+                <div class="input-group-text ">+36</div>
+                <input type="number" id="phoneNum" class="form-control" @bind-value="basicCustomer.PhoneNumber">
+            </div>
+
+            <div class="mt-2">
+                <label for="note" class="form-label">Note</label>
+                <textarea type="textarea" id="note" class="form-control" @bind="order.Description"></textarea>
+            </div>
+
+            <button class="btn btn-primary w-100 mt-3" @onclick="(() => CreateOrder())">Order</button>
+        }
+    </form>
+</div>
+
 
 @code {
     //phonemun restrict, order->modal message    

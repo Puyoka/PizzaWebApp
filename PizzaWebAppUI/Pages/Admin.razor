@@ -71,10 +71,10 @@
 
 <div id="accordion">
     <div class="card">
-        <div class="card-header" id="headingOne">
+        <div class="card-header text-center" id="headingOne">
             <h5 class="mb-0">
-                <button class="btn btn-link" data-toggle="collapse" data-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
-                    <h1>Edit products</h1>
+                <button class="btn btn-link text-decoration-none text-uppercase" data-toggle="collapse" data-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                    <h2>Edit products</h2>
                 </button>
             </h5>
         </div>
@@ -130,9 +130,9 @@
         </div>
     </div>
     <div class="card">
-        <div class="card-header" id="headingTwo">
+        <div class="card-header  text-center" id="headingTwo">
             <h5 class="mb-0">
-                <button class="btn btn-link collapsed" data-toggle="collapse" data-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                <button class="btn btn-link collapsed text-decoration-none text-uppercase" data-toggle="collapse" data-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
                     <h2>Orders</h2>
                 </button>
             </h5>
@@ -183,7 +183,7 @@
                                         <td>@order.Description</td>
                                         <td>
                                             <div class="dropdown">
-                                                <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                                <button class="btn btn-secondary dropdown-toggle" style="width:150px" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                                 @order.OrderStatus.Name
                                                 </button>
 
@@ -205,53 +205,72 @@
         </div>
     </div>
     <div class="card">
-        <div class="card-header" id="headingThree">
+        <div class="card-header text-center" id="headingThree">
             <h5 class="mb-0">
-                <button class="btn btn-link collapsed" data-toggle="collapse" data-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
-                    Create
+                <button class="btn btn-link collapsed text-decoration-none text-uppercase" data-toggle="collapse" data-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+                    <h2>Create</h2>
                 </button>
             </h5>
         </div>
         <div id="collapseThree" class="collapse" aria-labelledby="headingThree" data-parent="#accordion">
-            <div class="card-body">
-                <div class="btn-group">
+            <div class="card-body text-center justify-content-center">
+                <div class="btn-group btn-group-lg p-2 w-75">
                     <button class="btn btn-primary" @onclick="(()=> CreateToggle(true))">Pizza</button>
-                    <button class="btn btn-primary" @onclick="(()=> CreateToggle(false))">Drinks</button>
+                    <button class="btn btn-primary" @onclick="(()=> CreateToggle(false))">Drink</button>
                 </div>
                 @if(createToggle)
                 {
                     <form>                    
-                        <div class="form-floating">
-                            <input type="text" id="name" class="form-control" placeholder="Name " @bind-value="a">
+                        <div class="form-floating mb-2">
+                            <input type="text" id="name" class="form-control" placeholder="Name " @bind-value="newProduct.Name">
                             <label for="name" class="form-label">Name</label>
                         </div>
 
-                        <div class="form-floating">
-                            <input type="text" id="price" class="form-control" placeholder="Price" @bind-value="a">
+                        <div class="form-floating mb-2">
+                            <input type="text" id="price" class="form-control" placeholder="Price" @bind-value="newProduct.Price">
                             <label for="price" class="form-label">Price</label>
                         </div>
 
                         @if(ingredients is not null)
                         {
                             <div class="row row-cols-5">
-                                <div class="col ">
+                                
                                 @foreach(var ingredient in ingredients)
                                 {
-                                    <div class="custom-control custom-checkbox list-group-item">
-                                        <input class="custom-control-input" type="checkbox" @oninput="(()=> CheckboxChanged(ingredient))">
-                                        <label class="cursor-pointer font-italic d-block custom-control-label">@ingredient.Name</label>
+                                    <div class="col">
+                                        <div class="custom-control custom-checkbox list-group-item">
+                                            <input class="custom-control-input" type="checkbox" @oninput="(()=> CheckboxChanged(ingredient))">
+                                            <label class="cursor-pointer font-italic d-block custom-control-label">@ingredient.Name</label>
+                                        </div>
                                     </div>
                                 } 
-                                </div>
+                                
                             </div>
                         }
-                        <button class="btn btn-primary" @onclick="nothing">Create</button>                    
+                        <button class="btn btn-primary w-100 mt-3" @onclick="CreatePizza">Create</button>
                     </form>
                 }
                 else
                 {
-                    
+                    <form>
+                        <div class="form-floating mb-2">
+                            <input type="text" id="name" class="form-control" placeholder="Name " @bind-value="newProduct.Name">
+                            <label for="name" class="form-label">Name</label>
+                        </div>
 
+                        <div class="form-floating mb-2">
+                            <input type="text" id="price" class="form-control" placeholder="Price" @bind-value="newProduct.Price">
+                            <label for="price" class="form-label">Price</label>
+                        </div>
+
+                        <div class="form-floating mb-2">
+                            <input type="text" id="price" class="form-control" placeholder="Price" @bind-value="newProductsSize">
+                            <label for="price" class="form-label">Size</label>
+                        </div>
+
+
+                        <button class="btn btn-primary w-100 mt-3" @onclick="CreateDrink">Create</button>
+                    </form>
                 }
             </div>
         </div>
@@ -289,7 +308,30 @@
     }
     //CREATE
     CategoryModel newProductsCategory = new CategoryModel();
+    string newProductsSize = string.Empty;
     List<IngredientModel> newProductsIngredients = new List<IngredientModel>();
+    ProductModel newProduct = new ProductModel();
+
+    private async Task CreateDrink()
+    {
+        var product = new ProductDrinkModel();
+        product.Name = newProduct.Name;
+        product.Price = newProduct.Price;
+        product.Size = newProductsSize;
+        product.Available = true;
+        await productData.CreateProduct(product);
+    }
+
+    private async Task CreatePizza()
+    {
+        var product = new ProductPizzaModel();
+        product.Name = newProduct.Name;
+        product.Price = newProduct.Price;
+        product.Category = newProductsCategory;
+        product.Ingrediens = newProductsIngredients;
+        product.Available = true;
+        await productData.CreateProduct(product);
+    }
 
     private void CheckboxChanged(IngredientModel ingredient)
     {
