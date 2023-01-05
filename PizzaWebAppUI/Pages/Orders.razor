@@ -4,8 +4,8 @@
 @inject IOrderData orderData
 @inject ICustomerData customerData
 
-<div class="container bg-white text-black w-25 rounded-pill mb-5">
-    <h2 class="bg-white text-black text-center text-uppercase">Orders</h2>
+<div class="container bg-white text-black w-25 rounded-pill mb-5 mt-4">
+    <h2 class="bg-white text-black text-center text-uppercase rounded-pill">Orders</h2>
 </div>
 
 
@@ -60,6 +60,5 @@
         loggedInCustomer = await authProvider.GetCustomerFromAuth(customerData);
         customerOrders = await orderData.GetCustomerOrders(loggedInCustomer.Id);        
     }
-
 
 }
