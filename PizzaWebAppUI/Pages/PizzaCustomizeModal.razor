@@ -1,0 +1,127 @@
+﻿@attribute [Authorize]
+@inject AuthenticationStateProvider authProvider
+
+@inject IIngredientData ingredientData
+@inject ICustomerData customerData
+@inject IProductData productData
+
+
+
+<div class="container-fluid">
+    <p>Extras</p>
+    <div class="row row-cols-5">
+        
+        @foreach (var ingredient in allIngredients)
+        {
+            <div class="col">
+                <button class="custom-control list-group-item w-100" @onclick="(() => AddIngredient(ingredient))"> 
+                    @ingredient.Name
+                </button>
+            </div>
+        }
+
+    </div>
+    <hr />
+    <p>On the pizza</p>
+    <div class="row row-cols-5">
+
+        @foreach (var ingredient in newCustomizedPizzaIngredients.ToList())
+        {
+            <div class="col">
+                <button class="custom-control list-group-item w-100" @onclick="(() => RemoveIngredient(ingredient))"> 
+                    <div class="cursor-pointer font-italic d-block custom-control-label text-center">@ingredient.Name</div>
+                </button>
+            </div>
+        }
+
+    </div>
+    <hr />
+    <div class="w-100 text-center">
+        <button class="btn btn-success w-25" @onclick="UpdatePizza">Done</button>
+    </div>
+</div>
+
+
+
+@code {
+    [Parameter]
+    public int productIndex { get; set; }
+    [CascadingParameter]
+    public BlazoredModalInstance ModalInstance { get; set; }
+
+    private CustomerModel loggedInCustomer;
+    private List<IngredientModel> allIngredients = new List<IngredientModel>();
+    private List<ProductPizzaModel> allPizzas;
+
+    private ProductPizzaModel newCustomizedPizza;
+    private List<IngredientModel> newCustomizedPizzaIngredients = new List<IngredientModel>();
+
+    private List<IngredientModel> ogPizzaIngredients;
+    private int ogPizzaPrice;
+
+    protected async override Task OnInitializedAsync()
+    {
+        allIngredients = await ingredientData.GetAllIngredients();
+        loggedInCustomer = await authProvider.GetCustomerFromAuth(customerData);
+        allPizzas = await productData.GetProductsByType(new ProductPizzaModel());
+
+        var ogPizza = allPizzas.Where(x => x.Id == loggedInCustomer.ShoppingCart[productIndex].Id).FirstOrDefault();
+        ogPizzaPrice = ogPizza.Price;
+        ogPizzaIngredients = ogPizza.Ingrediens;
+
+        newCustomizedPizza = ogPizza;
+        newCustomizedPizzaIngredients = customerData.GetPizzaIngredientsFromShoppingcart(loggedInCustomer, productIndex).Result;
+    }
+
+    private void AddIngredient(IngredientModel ingredient)
+    {
+        newCustomizedPizzaIngredients.Add(ingredient);
+        StateHasChanged();        
+    }
+
+    private void RemoveIngredient(IngredientModel ingredient)
+    {
+        newCustomizedPizzaIngredients.Remove(ingredient);
+        StateHasChanged();        
+    }
+
+    private async Task UpdatePizza()
+    {
+        newCustomizedPizza.Name = "*" + newCustomizedPizza.Name + "*";
+        newCustomizedPizza.Ingrediens = newCustomizedPizzaIngredients;
+        newCustomizedPizza.Price = GetCustomizedPizzaPrice();
+        loggedInCustomer.ShoppingCart[productIndex] = newCustomizedPizza;
+
+        await customerData.UpdateCustomer(loggedInCustomer);
+
+        await ModalInstance.CloseAsync(ModalResult.Ok(true));
+        StateHasChanged();
+    }
+
+    private int GetCustomizedPizzaPrice()
+    {
+        var originalIngredients = ogPizzaIngredients;
+        var customizedIngredients = newCustomizedPizzaIngredients;
+
+        var priceChange = 0;
+        foreach (var ingredient in customizedIngredients)
+        {
+            priceChange += ingredient.Price;
+        }
+
+        foreach (var ingredient in originalIngredients)
+        {
+            priceChange -= ingredient.Price;
+        }
+
+
+        if (ogPizzaPrice > ogPizzaPrice + priceChange)
+        {
+            return ogPizzaPrice;   
+        }
+        else
+        {
+            return ogPizzaPrice + priceChange;
+        }
+    }
+}

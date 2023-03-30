@@ -4,6 +4,8 @@
 @inject ICustomerData customerData
 @inject IOrderStatusData orderStatusData
 @inject IOrderData orderData
+@inject IProductData productData
+@inject IModalService modal
 
 <div class="container bg-white text-black w-25 rounded-pill mb-5 mt-4">
     <h2 class="bg-white text-black text-center text-uppercase rounded-pill">Cart</h2>
@@ -23,18 +25,35 @@
                     </tr>
                 </thead>
                 <tbody>
-                    
                         @foreach (var product in loggedInCustomer.ShoppingCart)
                         {
                             <tr>
-                            <td class="col-4 text-center">
-                                    @product.Name
+                                <td class="col-4 text-center">
+                                    @product.Name <br>
+                                    
+                                    @if (product.Category.Name == "Pizza")
+                                    {
+
+
+                                        List<IngredientModel> ingredients = customerData.GetPizzaIngredientsFromShoppingcart(loggedInCustomer, loggedInCustomer.ShoppingCart.IndexOf(product)).Result;
+                                        foreach (var ingredient in ingredients)
+                                        {
+                                        @ingredient.Name
+                                        if (ingredients.IndexOf(ingredient) != ingredients.Count -1)
+                                        {
+                                            @(", ")
+                                        }
+                                        }
+                                        <button class="btn btn-secondary " @onclick="(() => CustomizePizza(loggedInCustomer.ShoppingCart.IndexOf(product)))">Customize</button>
+                                    }
+                                    
                                 </td>
-                            <td class="col-4 text-center">
-                                    @product.Price
+                                <td class="col-4 text-center align-middle">
+                                        @product.Price.ToString()
                                 </td>
-                            <td class="col-4 text-center">
-                                    <button class="btn btn-danger" @onclick="(() => RemoveFromCart(product))">Remove</button>
+
+                            <td class="col-4 text-center align-middle">
+                                        <button class="btn btn-danger" @onclick="(() => RemoveFromCart(product))">Remove</button>
                                 </td>
                             </tr>
                         }
@@ -87,17 +106,19 @@
 
 
 @code {
-    //phonemun restrict, order->modal message    
+    //phonemun restrict, order->modal message + email,
 
     private BasicCustomerModel basicCustomer;
     private OrderModel order = new();
     private CustomerModel loggedInCustomer;
     private List<OrderStatusModel> orderStatuses;
+    private List<ProductPizzaModel> allPizzas;
 
     protected async override Task OnInitializedAsync()
     {
         loggedInCustomer = await authProvider.GetCustomerFromAuth(customerData);
         orderStatuses = await orderStatusData.GetAllOrderStatuses();
+        allPizzas = await productData.GetProductsByType(new ProductPizzaModel());
         InitializeBasicCustomerInfo();
     }
 
@@ -131,7 +152,10 @@
 
         loggedInCustomer.ShoppingCart.Clear();
         await customerData.UpdateCustomer(loggedInCustomer);
+
+        StateHasChanged();
     }
+
     private async Task CheckPhoneNumber()
     {
         //Add phoneNum to db
@@ -139,6 +163,25 @@
         {
             loggedInCustomer.PhoneNumber = basicCustomer.PhoneNumber;
             await customerData.UpdateCustomer(loggedInCustomer);
+        }
+    }
+
+    private async Task CustomizePizza(int productIndex)
+    {
+        var param = new ModalParameters();
+        param.Add(nameof(productIndex), productIndex);
+
+        var options = new ModalOptions()
+        {
+            Size = ModalSize.Large
+        };
+        var m = modal.Show<PizzaCustomizeModal>("Customize Pizza",param,options);
+        var result = await m.Result;
+
+        if (result.Confirmed)
+        {
+            loggedInCustomer = await customerData.GetCustomer(loggedInCustomer.Id);
+            StateHasChanged();
         }
     }
 
@@ -151,4 +194,6 @@
         }
         return total;
     }
+
+
 }
