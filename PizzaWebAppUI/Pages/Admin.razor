@@ -98,18 +98,18 @@
                                 {
                                     <tr>
                                         <td>
-                                            <input type="text" class="form-control form-control-plaintext bg-white" @bind-value="product.Name" disabled="@IsEditDisabled(product.Name)" />
+                                            <input type="text" class="form-control form-control-plaintext bg-white" @bind="product.Name" disabled="@IsEditDisabled(product.Id)" />
                                         </td>
                                         <td>
-                                            <input type="text" class="form-control form-control-plaintext bg-white" @bind-value="product.Price" disabled="@IsEditDisabled(product.Name)" />
+                                            <input type="text" class="form-control form-control-plaintext bg-white" @bind="product.Price" disabled="@IsEditDisabled(product.Id)" />
                                         </td>
                                         <td>
                                             <div class="form-check">
-                                                <input type="checkbox" class="form-check-input" @bind="product.Available" disabled="@IsEditDisabled(product.Name)" />
+                                                <input type="checkbox" class="form-check-input" @bind="product.Available" disabled="@IsEditDisabled(product.Id  )" />
                                             </div>
                                         </td>
                                         <td>
-                                            @if (IsEditDisabled(product.Name))
+                                            @if (IsEditDisabled(product.Id))
                                             {
                                                 <button class="btn btn-primary" @onclick="(() => SetWhichProductToEdit(product))">Edit</button>
                                                 <button class="btn btn-danger" @onclick="(() => DeleteProduct(product))">Delete</button>
@@ -286,6 +286,9 @@
         <div id="collapseFour" class="collapse" aria-labelledby="headingFour" data-parent="#accordion">
             <div class="card-body">
                 <div class="row">
+
+                </div>
+                <div class="row">
                     <form>                    
                         <div class="form-floating mb-2">
                             <input type="text" id="name" class="form-control" placeholder="Name " @bind-value="newIngredient.Name">
@@ -403,17 +406,17 @@
     }
 
     //EDIT
-    private string editedProduct = string.Empty;
+    private ProductModel editedProduct = new();
     private ProductModel productPreEdit = new();
     private void SetWhichProductToEdit(ProductModel product)
     {
-        editedProduct = product.Name;
+        editedProduct = product;
         //ref
-        productPreEdit = new ProductModel() {Id = product.Id, Available = product.Available, Category = product.Category, Name = product.Name, Price = product.Price };
+        productPreEdit = new ProductModel() {Id = product.Id, Available = product.Available, Category = product.Category, Name = product.Name.ToString(), Price = product.Price };
     }
-    private bool IsEditDisabled(string productName)
+    private bool IsEditDisabled(string productId)
     {
-        return editedProduct != productName;
+        return editedProduct.Id != productId;
     }
 
     private async Task DeleteProduct(ProductModel product)
@@ -426,7 +429,7 @@
     {
         await productData.UpdateProduct(product);
         productPreEdit = new();
-        editedProduct = string.Empty;
+        editedProduct = new();
     }
 
     private void CancelEdit(ProductModel product)
@@ -438,7 +441,7 @@
 
 
         productPreEdit = new();
-        editedProduct = string.Empty;       
+        editedProduct = new();       
         StateHasChanged();
     }
 

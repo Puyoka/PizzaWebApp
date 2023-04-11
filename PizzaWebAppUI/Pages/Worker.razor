@@ -1,0 +1,110 @@
+﻿@page "/worker"
+@attribute [Authorize]
+@inject AuthenticationStateProvider authProvider
+@inject IIngredientData ingredientData
+@inject IProductData productData
+@inject ICustomerData customerData
+@inject IOrderData orderData
+@inject IOrderStatusData orderStatusData
+@inject ICategoryData categoryData
+@inject IModalService modal
+
+<h3>WorkerPage</h3>
+
+<div class="row row-cols-2 m-0">
+    <div class="col w-25">
+        @if (loggedInCustomer != null)
+        {
+            @foreach (var product in loggedInCustomer.ShoppingCart)
+            {
+                <div class="bg-light" @ondblclick="(() => CustomizePizza(loggedInCustomer.ShoppingCart.IndexOf(product)))">
+                    <p class="pt-3 pb-2 bg-light text-black text-uppercase">
+                        @product.Name
+                        <button class="btn btn-danger" @onclick="(() => RemoveFromOrder(product))">-</button>
+                    </p>
+                </div>
+            }
+        }        
+        <p>@GetOrderTotal()</p>
+    </div>
+    <div class="col" style="width: 70%">
+        <div class="row row-cols-5">        
+        @foreach (var product in products)
+        {
+            <div class="col">
+                <button class="custom-control list-group-item w-100" @onclick="(() => AddToOrder(product))"> 
+                        @product.Name
+                </button>
+            </div>
+        }
+    </div>
+    </div>
+</div>
+
+
+@code {
+    private List<ProductModel> products = new();
+    private List<OrderModel> orders;
+    private List<OrderStatusModel> orderStatuses;
+    private List<CategoryModel> categories;
+    private List<IngredientModel> ingredients;
+
+    private CustomerModel loggedInCustomer;
+    private List<OrderModel> customerOrders;
+
+    protected async override Task OnInitializedAsync()
+    {
+        products = await productData.GetAllProducts();
+        orders = await orderData.GetAllOrders();
+        orderStatuses = await orderStatusData.GetAllOrderStatuses();
+        categories = await categoryData.GetAllCategories();
+        ingredients = await ingredientData.GetAllIngredients();
+
+        loggedInCustomer = await authProvider.GetCustomerFromAuth(customerData);
+        customerOrders = await orderData.GetCustomerOrders(loggedInCustomer.Id);
+    }
+
+    private void AddToOrder(ProductModel product)
+    {
+        loggedInCustomer.ShoppingCart.Add(product);
+        customerData.UpdateCustomer(loggedInCustomer);
+    }
+    private void RemoveFromOrder(ProductModel product)
+    {
+        loggedInCustomer.ShoppingCart.Remove(product);
+        customerData.UpdateCustomer(loggedInCustomer);
+    }
+
+    private int GetOrderTotal()
+    {
+        if (loggedInCustomer is null) return 0;
+
+        var total = 0;
+        foreach (var item in loggedInCustomer?.ShoppingCart)
+        {
+            total += item.Price;
+        }
+        return total;
+    }
+
+    private async Task CustomizePizza(int productIndex)
+    {
+        
+
+        var param = new ModalParameters();
+        param.Add(nameof(productIndex), productIndex);
+
+        var options = new ModalOptions()
+            {
+                Size = ModalSize.Large
+            };
+        var m = modal.Show<PizzaCustomizeModal>("Customize Pizza", param, options);
+        var result = await m.Result;
+
+        if (result.Confirmed)
+        {
+            loggedInCustomer = await customerData.GetCustomer(loggedInCustomer.Id);
+            StateHasChanged();
+        }
+    }
+}
