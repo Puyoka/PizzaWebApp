@@ -11,38 +11,74 @@
 
 <h3>WorkerPage</h3>
 
-<div class="row row-cols-2 m-0">
-    <div class="col w-25">
-        @if (loggedInCustomer != null)
-        {
-            @foreach (var product in loggedInCustomer.ShoppingCart)
-            {
-                <div class="bg-light" @ondblclick="(() => CustomizePizza(loggedInCustomer.ShoppingCart.IndexOf(product)))">
-                    <p class="pt-3 pb-2 bg-light text-black text-uppercase">
-                        @product.Name
-                        <button class="btn btn-danger" @onclick="(() => RemoveFromOrder(product))">-</button>
-                    </p>
-                </div>
-            }
-        }        
-        <p>@GetOrderTotal()</p>
+
+    <div class="row justify-content-center">    
+        <div class="btn-group btn-group-lg w-50 pb-4">
+            <button class="btn btn-primary" @onclick="(()=> ViewToggler(true))">New Order</button>
+            <button class="btn btn-primary" @onclick="(()=> ViewToggler(false))">Order Items</button>
+        </div>
     </div>
-    <div class="col" style="width: 70%">
-        <div class="row row-cols-5">        
-        @foreach (var product in products)
-        {
-            <div class="col">
-                <button class="custom-control list-group-item w-100" @onclick="(() => AddToOrder(product))"> 
-                        @product.Name
-                </button>
+
+    @if(viewToggle)
+    {
+        <div class="row row-cols-2 m-0">
+            <div class="col w-25">
+                @if (loggedInCustomer != null)
+                {
+                    @foreach (var product in loggedInCustomer.ShoppingCart)
+                    {
+                        <div class="bg-light" @ondblclick="(() => CustomizePizza(loggedInCustomer.ShoppingCart.IndexOf(product),product))">
+                            <p class="pt-3 pb-2 bg-light text-black text-uppercase">
+                                @product.Name
+                                <button class="btn btn-danger" @onclick="(() => RemoveFromOrder(product))">-</button>
+                            </p>
+                        </div>
+                    }
+                }        
+                <p>Total: @GetOrderTotal()</p>
+                <button class="btn btn-primary w-100 mt-3" @onclick="(() => CreateOrder())">Order</button>
             </div>
-        }
-    </div>
-    </div>
-</div>
+            <div class="col" style="width: 70%">
+                <div class="row row-cols-5">        
+                @foreach (var product in products)
+                {
+                    <div class="col">
+                        <button class="custom-control list-group-item w-100" @onclick="(() => AddToOrder(product))"> 
+                                @product.Name
+                        </button>
+                    </div>
+                }
+                </div>
+                <div class="container bg-white text-black rounded-3 p-3 shadow-lg ">
+                    <form>
+                        @if(basicCustomer is not null)
+                        {
+                            <div class="form-check">
+                                Pays with card <input type="checkbox" class="form-check-input"@bind-value="order.PaysWithCash">
+                            </div>
+
+                            <div class="mt-2">
+                                <label for="note" class="form-label">Note</label>
+                                <textarea type="textarea" id="note" class="form-control" @bind="order.Description"></textarea>
+                            </div>
+                        }
+                    </form>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+
+    }
+
 
 
 @code {
+    private bool viewToggle = true;
+    private BasicCustomerModel basicCustomer = new();
+    private OrderModel order = new();
+
     private List<ProductModel> products = new();
     private List<OrderModel> orders;
     private List<OrderStatusModel> orderStatuses;
@@ -62,7 +98,15 @@
 
         loggedInCustomer = await authProvider.GetCustomerFromAuth(customerData);
         customerOrders = await orderData.GetCustomerOrders(loggedInCustomer.Id);
+
+        InitializeBasicCustomerInfo();
     }
+
+    private void ViewToggler(bool b)
+    {
+        viewToggle = b;
+    }
+
 
     private void AddToOrder(ProductModel product)
     {
@@ -87,9 +131,9 @@
         return total;
     }
 
-    private async Task CustomizePizza(int productIndex)
+    private async Task CustomizePizza(int productIndex, ProductModel product)
     {
-        
+        if (product.Category.Name != "Pizza") return;
 
         var param = new ModalParameters();
         param.Add(nameof(productIndex), productIndex);
@@ -106,5 +150,32 @@
             loggedInCustomer = await customerData.GetCustomer(loggedInCustomer.Id);
             StateHasChanged();
         }
+    }
+
+    private async Task CreateOrder()
+    {
+        if (loggedInCustomer.ShoppingCart.Count == 0) return;
+
+        order.Customer = basicCustomer;
+        order.Products = loggedInCustomer.ShoppingCart;
+        order.Total = GetOrderTotal();
+        order.Date_0 = DateTime.Now;
+        order.OrderStatus = orderStatuses.Where(x => x.Name == "Processing").FirstOrDefault();
+
+        await orderData.CreateOrder(order);
+        order = new();
+
+        loggedInCustomer.ShoppingCart.Clear();
+        await customerData.UpdateCustomer(loggedInCustomer);
+
+        StateHasChanged();
+    }
+
+            
+    private void InitializeBasicCustomerInfo()
+    {
+        basicCustomer.Id = loggedInCustomer.Id;
+        basicCustomer.Address = loggedInCustomer.Address;
+        basicCustomer.PhoneNumber = loggedInCustomer.PhoneNumber;
     }
 }
