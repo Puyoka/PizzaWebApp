@@ -9,11 +9,11 @@
 @inject ICategoryData categoryData
 @inject IModalService modal
 
-<h3>WorkerPage</h3>
 
 
+<div class="container">
     <div class="row justify-content-center">    
-        <div class="btn-group btn-group-lg w-50 pb-4">
+        <div class="btn-group btn-group-lg w-50 pb-4 mb-5 mt-4">
             <button class="btn btn-primary" @onclick="(()=> ViewToggler(true))">New Order</button>
             <button class="btn btn-primary" @onclick="(()=> ViewToggler(false))">Order Items</button>
         </div>
@@ -69,9 +69,63 @@
     }
     else
     {
+        @foreach(var order in orders)
+        {
+            @if (ContainsPizza(order.Products))
+            {
+                <div class="row btn-primary mb-0 rounded-top"  style="border-radius: 0">
+                    <div class="col-4"></div>
+                    <div class="col-4 text-center">@GetTime(order.Date_0)</div>
+                    <div class="col-4 text-end">
+                        <button class="btn btn-secondary">Done</button>
+                    </div>
+                </div>
+                <div class="row bg-white" style="border-radius: 0">
+                    <div class="col text-center ">
+                        @order.Description
+                    </div>
+                    <hr class="bg-white">
+                </div>                
+
+                <div class=" mt-0 mb-4">
+                    @foreach (var product in order.Products)
+                    {                        
+                        @if (product.Category.Name == "Pizza")
+                        {
+                            List<IngredientModel> ingredients = orderData.GetPizzaIngredientsFromOrder(order, order.Products.IndexOf(product)).Result;
+                            <div class="row bg-white" style="border-radius: 0">
+                                <div class="col-6 text-center ">
+                                    @product.Name
+                                </div>
+                                <div class="col-6 text-center ">
+                                    @foreach (var ingredient in ingredients)
+                                    {
+                                        @ingredient.Name
+                                        if (ingredients.IndexOf(ingredient) != ingredients.Count - 1)
+                                        {
+                                            @(", ")
+                                        }
+                                    }
+                                </div>
+
+                            </div>
+                            
+                        }
+                    }
+
+                </div>
+            }
+            
+
+
+
+
+                    }
+
+    
 
     }
-
+</div>
 
 
 @code {
@@ -92,6 +146,7 @@
     {
         products = await productData.GetAllProducts();
         orders = await orderData.GetAllOrders();
+        orders = orders.Where(x => x.OrderStatus.Name == "Processing").ToList();
         orderStatuses = await orderStatusData.GetAllOrderStatuses();
         categories = await categoryData.GetAllCategories();
         ingredients = await ingredientData.GetAllIngredients();
@@ -171,11 +226,30 @@
         StateHasChanged();
     }
 
-            
     private void InitializeBasicCustomerInfo()
     {
         basicCustomer.Id = loggedInCustomer.Id;
         basicCustomer.Address = loggedInCustomer.Address;
         basicCustomer.PhoneNumber = loggedInCustomer.PhoneNumber;
+    }
+
+
+
+    private string GetTime(DateTime date)
+    {
+        return date.Hour + ":" + date.Minute;
+    }
+
+    private bool ContainsPizza(List<ProductModel> products)
+    {
+        foreach (var item in products)
+        {
+            if (item.Category.Name == "Pizza")
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 }
