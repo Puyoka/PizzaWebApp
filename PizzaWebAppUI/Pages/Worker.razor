@@ -11,39 +11,49 @@
 
 
 
-<div class="container">
-    <div class="row justify-content-center">    
-        <div class="btn-group btn-group-lg w-50 pb-4 mb-5 mt-4">
-            <button class="btn btn-primary" @onclick="(()=> ViewToggler(true))">New Order</button>
-            <button class="btn btn-primary" @onclick="(()=> ViewToggler(false))">Order Items</button>
-        </div>
-    </div>
 
+<div class="container text-black w-50 mb-5 mt-4 text-center">
+    <div class="btn-group btn-group-lg ">
+        <button class="btn btn-primary" @onclick="(()=> ViewToggler(true))">New Order</button>
+        <button class="btn btn-primary" @onclick="(()=> ViewToggler(false))">Order Items</button>
+    </div>
+</div>
+
+<div class="container">
     @if(viewToggle)
     {
-        <div class="row row-cols-2 m-0">
-            <div class="col w-25">
-                @if (loggedInCustomer != null)
-                {
-                    @foreach (var product in loggedInCustomer.ShoppingCart)
+        <div class="row row-cols-2 p-3 bg-light ">
+            <div class="col w-25 d-flex flex-column">
+                <div class="bg-white shadow-sm mb-auto align-middle">
+                    @if (loggedInCustomer != null)
                     {
-                        <div class="bg-light" @ondblclick="(() => CustomizePizza(loggedInCustomer.ShoppingCart.IndexOf(product),product))">
-                            <p class="pt-3 pb-2 bg-light text-black text-uppercase">
-                                @product.Name
-                                <button class="btn btn-danger" @onclick="(() => RemoveFromOrder(product))">-</button>
-                            </p>
-                        </div>
+                        @foreach (var product in loggedInCustomer.ShoppingCart)
+                        {
+                            <div class="m-1 row" @ondblclick="(() => CustomizePizza(loggedInCustomer.ShoppingCart.IndexOf(product),product))">
+                                <div class="col-10 p-0 text-black">
+                                    @product.Name
+
+                                </div>
+                                <div class="col-1 p-0 text-black">
+
+                                    <button class="btn btn-danger" @onclick="(() => RemoveFromOrder(product))">-</button>
+                                </div>
+                            </div>
+                        }
                     }
-                }        
-                <p>Total: @GetOrderTotal()</p>
-                <button class="btn btn-primary w-100 mt-3" @onclick="(() => CreateOrder())">Order</button>
+                </div>
+                <div class="">
+                    <p class="mb-0 mt-1">Total: @GetOrderTotal()</p>
+                    <button class="btn btn-primary w-100 " @onclick="(() => CreateOrder())">Order</button>
+                </div>
+                
             </div>
-            <div class="col" style="width: 70%">
+            <div class="col ms-3" style="width: 70%">
                 <div class="row row-cols-5">        
                 @foreach (var product in products)
                 {
                     <div class="col">
-                        <button class="custom-control list-group-item w-100" @onclick="(() => AddToOrder(product))"> 
+                        <button class="custom-control list-group-item w-100 mb-3 shadow-sm " @onclick="(() => AddToOrder(product))"> 
                                 @product.Name
                         </button>
                     </div>
@@ -69,6 +79,12 @@
     }
     else
     {
+        @if (orders.Count == 0)
+        {
+            <div class="row bg-white text-black rounded-3 mb-4 shadow-lg text-center">
+                <p class="m-2 p-0">There are no orders at the moment.</p>
+            </div>
+        }
         @foreach(var order in orders)
         {
             @if (ContainsPizza(order.Products))
@@ -77,7 +93,7 @@
                     <div class="col-4"></div>
                     <div class="col-4 text-center">@GetTime(order.Date_0)</div>
                     <div class="col-4 text-end">
-                        <button class="btn btn-secondary">Done</button>
+                        <button class="btn btn-light m-1" @onclick="(() => OrderDone(order))">Done</button>
                     </div>
                 </div>
                 <div class="row bg-white" style="border-radius: 0">
@@ -115,15 +131,7 @@
 
                 </div>
             }
-            
-
-
-
-
-                    }
-
-    
-
+        }
     }
 </div>
 
@@ -251,5 +259,15 @@
         }
 
         return false;
+    }
+
+    private async Task OrderDone(OrderModel order)
+    {
+        var deliverStat = orderStatuses.Where(x => x.Name == "Delivering").FirstOrDefault();
+        order.OrderStatus = deliverStat;
+
+        await orderData.UpdateOrderStatus(order);
+        orders = await orderData.GetAllOrders();
+        orders = orders.Where(x => x.OrderStatus.Name == "Processing").ToList();
     }
 }
