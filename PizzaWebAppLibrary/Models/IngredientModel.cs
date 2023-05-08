@@ -1,4 +1,5 @@
 ﻿namespace PizzaWebAppLibrary.Models;
+
 public class IngredientModel
 {
     [BsonId]

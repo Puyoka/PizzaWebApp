@@ -1,5 +1,5 @@
-﻿@page "/worker"
-@attribute [Authorize]
+﻿@page "/Worker"
+@attribute [Authorize(Policy = "Worker")]
 @inject AuthenticationStateProvider authProvider
 @inject IIngredientData ingredientData
 @inject IProductData productData

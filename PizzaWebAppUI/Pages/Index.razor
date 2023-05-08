@@ -94,21 +94,21 @@
             {
                 @foreach (var drink in drinks)
                 {
-                    <div class="col">
-                        <div class="bg-light text-dark hstack my-2">
-                            <div>
+                    <div class="col my-2">
+                        <div class="bg-light text-dark rounded-3 d-flex justify-content-between">
+                            <div class="m-2" style="width: 30%">
                                 <img src="/images/sodaPlaceholder.jpg" class="img-fluid" alt="Responsive image" style="height: 200px; width:200px">
                             </div> 
                             <div>
-                                <h2>@drink.Name</h2>
-                                <p>
+                                <h2 class="h-25 m-0">@drink.Name</h2>
+                                <p class="h-50 m-0">
                                     @drink.Size
                                 </p>
-                                <div>@drink.Price</div>
-                            </div>                     
-                            <div>
+                                <div class="h-25">$ @drink.Price</div>
+                            </div>
+                            <div class="" style="width: 20%">
                                 <AuthorizeView>
-                                    <button class="btn btn-primary" @onclick="(() => PutInCart(drink))">Put in cart</button>
+                                    <button class="btn btn-primary h-100 w-100" @onclick="(() => PutInCart(drink))"><i class="bi bi-cart-plus fs-1"></i></button>
                                 </AuthorizeView>
                             </div>                            
                         </div>

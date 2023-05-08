@@ -26,6 +26,13 @@ builder.Services.AddAuthorization(options =>
         policy.RequireClaim("jobTitle", "Admin");
     });
 });
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("Worker", policy =>
+    {
+        policy.RequireClaim("jobTitle", "Worker");
+    });
+});
 
 builder.Services.AddSingleton<IDbConnection, DbConnection>();
 builder.Services.AddSingleton<ICategoryData, MongoCategoryData>();

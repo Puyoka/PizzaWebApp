@@ -397,6 +397,10 @@
     private async Task ChangeStatus(OrderModel order, OrderStatusModel status)
     {
         order.OrderStatus = status;
+        if (status.Name == "Done")
+        {
+            order.Date_1 = DateTime.Now;
+        }
         await orderData.UpdateOrderStatus(order);
     }
 

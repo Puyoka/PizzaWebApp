@@ -1,6 +1,9 @@
 ﻿<AuthorizeView Policy="Admin">
     <a class="nav-item text-decoration-none text-white" href="/Admin  ">Admin</a>
 </AuthorizeView>
+<AuthorizeView Policy="Worker">
+    <a class="nav-item text-decoration-none text-white" href="/Worker  ">Worker</a>
+</AuthorizeView>
 <AuthorizeView>
     <Authorized>
         <a class="nav-item text-decoration-none text-white fs-4 " href="/MicrosoftIdentity/Account/EditProfile"><i class="bi bi-person"></i></a>
