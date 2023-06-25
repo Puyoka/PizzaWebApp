@@ -153,8 +153,7 @@
     protected async override Task OnInitializedAsync()
     {
         products = await productData.GetAllProducts();
-        orders = await orderData.GetAllOrders();
-        orders = orders.Where(x => x.OrderStatus.Name == "Processing").ToList();
+        RefreshOrders();
         orderStatuses = await orderStatusData.GetAllOrderStatuses();
         categories = await categoryData.GetAllCategories();
         ingredients = await ingredientData.GetAllIngredients();
@@ -163,6 +162,23 @@
         customerOrders = await orderData.GetCustomerOrders(loggedInCustomer.Id);
 
         InitializeBasicCustomerInfo();
+    }
+
+    private async void RefreshOrders()
+    {
+        orders = await orderData.GetAllOrders();
+        orders = orders.Where(x => x.OrderStatus.Name == "Processing").ToList();
+
+        var timer = new PeriodicTimer(TimeSpan.FromSeconds(5));
+
+        while (await timer.WaitForNextTickAsync())
+        {
+            orders = await orderData.GetAllOrders();
+            orders = orders.Where(x => x.OrderStatus.Name == "Processing").ToList();
+
+            StateHasChanged();
+        }
+
     }
 
     private void ViewToggler(bool b)
